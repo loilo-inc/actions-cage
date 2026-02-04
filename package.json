@@ -1,5 +1,5 @@
 {
-  "name": "actions-cage",
+  "name": "@loilo-inc/actions-cage",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
