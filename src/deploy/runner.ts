@@ -18,7 +18,7 @@ function assertInput(name: string): string {
   return v;
 }
 
-export async function main() {
+export async function run() {
   const deployContext = assertInput("deploy-context");
   const region = assertInput("region");
   const createDeployment = boolify(core.getInput("create-deployment"));
@@ -53,7 +53,7 @@ export async function main() {
     await deploy({ deployment, args });
   } catch (e) {
     if (e instanceof Error) {
-      console.error(e);
+      core.error(e);
     }
     core.setFailed("see error above");
   }

@@ -5,11 +5,8 @@
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"
   },
-  "exports": {
-    ".": "./dist/index.js",
-    "./setup": "./dist/setup/index.js",
-    "./deploy": "./dist/deploy/index.js"
-  },
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.js",
   "scripts": {
     "fmt": "prettier --write '**/*.ts'",
     "fmtcheck": "prettier --check '**/*.ts'",
