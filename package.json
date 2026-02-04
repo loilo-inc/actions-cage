@@ -11,6 +11,7 @@
     "fmt": "prettier --write '**/*.ts'",
     "fmtcheck": "prettier --check '**/*.ts'",
     "test": "vitest run",
+    "build": "tsc",
     "testci": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=json --coverage.reportsDirectory=coverage"
   },
   "dependencies": {
