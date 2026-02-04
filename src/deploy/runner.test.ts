@@ -1,7 +1,8 @@
 import * as core from "@actions/core";
 import { describe, expect, test, vi } from "vitest";
-import { main } from ".";
 import * as deploy from "./deploy";
+import { run } from "./runner";
+
 describe("runner", () => {
   const input = (key: string, value: string) => {
     vi.spyOn(core, "getInput").mockImplementationOnce((name: string) => {
@@ -21,7 +22,7 @@ describe("runner", () => {
     input("github-ref", "refs/heads/main");
     input("github-repository", "owner/repo");
     const deploySpy = vi.spyOn(deploy, "deploy").mockResolvedValueOnce();
-    await main();
+    await run();
     expect(deploySpy).toHaveBeenCalledWith({
       deployment: {
         environment: "production",
@@ -47,7 +48,7 @@ describe("runner", () => {
     input("deploy-context", ".");
     input("region", "us-west-2");
     const deploySpy = vi.spyOn(deploy, "deploy").mockResolvedValueOnce();
-    await main();
+    await run();
     expect(deploySpy).toHaveBeenCalledWith({
       deployment: undefined,
       args: ["--region", "us-west-2", "."],

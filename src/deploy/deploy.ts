@@ -1,6 +1,6 @@
-import { getOctokit } from "@actions/github";
-import * as exec from "@actions/exec";
 import * as core from "@actions/core";
+import * as exec from "@actions/exec";
+import { getOctokit } from "@actions/github";
 import type * as gh from "@actions/github/lib/utils";
 
 type Github = InstanceType<typeof gh.GitHub>;
@@ -67,7 +67,7 @@ export async function deploy({
   if (deployment) {
     github = getOctokit(deployment.token);
     const { owner, repo, ref, environment } = deployment;
-    console.log("Creating deployment...", owner, repo, ref, environment);
+    core.info(`Creating deployment... ${owner}/${repo}/${ref}, ${environment}`);
     const resp = await github.rest.repos.createDeployment({
       owner,
       repo,
@@ -82,11 +82,11 @@ export async function deploy({
       throw new Error("couldn't create deployment: " + message);
     }
     deployId = id;
-    console.log(`Deployment created: ${url}`);
+    core.info(`Deployment created: ${url}`);
   }
   let code = 1;
   try {
-    console.log(`Start rolling out...`);
+    core.info(`Start rolling out...`);
     if (github && deployment && deployId) {
       const { owner, repo } = deployment;
       await github.rest.repos.createDeploymentStatus({
@@ -102,14 +102,14 @@ export async function deploy({
     code = await exec.exec("cage", ["rollout", ...args]);
   } catch (e) {
     if (e instanceof Error) {
-      console.error(e);
+      core.error(e);
     }
     core.setFailed("see error above");
   } finally {
     if (github && deployment && deployId) {
       const { owner, repo } = deployment;
       if (code === 0) {
-        console.log(`Updating deployment state to 'success'...`);
+        core.info(`Updating deployment state to 'success'...`);
         await github.rest.repos.createDeploymentStatus({
           owner,
           repo,
@@ -122,7 +122,7 @@ export async function deploy({
           },
         });
       } else {
-        console.log(`Updating deployment state to 'failure'...`);
+        core.info(`Updating deployment state to 'failure'...`);
         await github.rest.repos.createDeploymentStatus({
           owner,
           repo,
@@ -130,7 +130,7 @@ export async function deploy({
           state: "failure",
         });
       }
-      console.log(`Deployment state updated.`);
+      core.info(`Deployment state updated.`);
       if (code !== 0) {
         core.setFailed(`Deployment failed with exit code ${code}`);
       }

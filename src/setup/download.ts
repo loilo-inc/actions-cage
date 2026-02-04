@@ -10,7 +10,7 @@ export async function downloadCage({
   assetName,
   version,
 }: CageInfo) {
-  console.log("🥚 Installing cage...");
+  core.info("🥚 Installing cage...");
   if (!assetUrl.startsWith("https://")) {
     throw new Error(`asset.url is not secure: ${assetUrl}`);
   }
@@ -35,7 +35,7 @@ export async function downloadCage({
   const extracted = await tc.extractZip(zip);
   const installed = await tc.cacheDir(extracted, "cage", version);
   core.addPath(installed);
-  console.log(`🐣 cage has been installed at '${installed}/cage'`);
+  core.info(`🐣 cage has been installed at '${installed}/cage'`);
 }
 
 export async function parseChecksum(

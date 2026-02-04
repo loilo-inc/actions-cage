@@ -3,13 +3,18 @@ import * as tc from "@actions/tool-cache";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { beforeEach } from "node:test";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { downloadCage, parseChecksum } from "./download";
 import { kMockPathPrefix, makeTestCageInfo } from "./testdata/testing";
 
 describe("downloadCage", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
   test("basic", async () => {
     const cage = makeTestCageInfo({ version: "0.2.0" });
+    const mockInfo = vi.spyOn(core, "info").mockImplementation(() => {});
     vi.spyOn(tc, "downloadTool").mockImplementation(async (u: string) => {
       const { pathname } = new URL(u);
       const p = pathname.replace(kMockPathPrefix, "");
@@ -22,6 +27,11 @@ describe("downloadCage", () => {
     vi.spyOn(tc, "cacheDir").mockImplementation(async (dir: string) => dir);
     vi.spyOn(core, "addPath").mockImplementation(() => {});
     await downloadCage(cage);
+    expect(mockInfo).toHaveBeenNthCalledWith(1, "🥚 Installing cage...");
+    expect(mockInfo).toHaveBeenNthCalledWith(
+      2,
+      expect.stringContaining("🐣 cage has been installed at '"),
+    );
   });
 
   afterEach(() => {
