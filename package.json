@@ -2,6 +2,9 @@
   "name": "actions-cage",
   "license": "MIT",
   "type": "module",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
   "exports": {
     ".": "./dist/index.js",
     "./setup": "./dist/setup/index.js",
