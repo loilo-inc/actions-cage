@@ -17,7 +17,7 @@
   "dependencies": {
     "@actions/core": "^2",
     "@actions/github": "^7",
-    "@actions/io": "^2",
+    "@actions/io": "^3",
     "@actions/tool-cache": "^3",
     "semver": "^7.6.2"
   },
