@@ -1,0 +1,33 @@
+{
+  "name": "actions-cage",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js",
+    "./setup": "./dist/setup/index.js",
+    "./deploy": "./dist/deploy/index.js"
+  },
+  "scripts": {
+    "fmt": "prettier --write '**/*.ts'",
+    "fmtcheck": "prettier --check '**/*.ts'",
+    "test": "vitest run",
+    "build": "tsc",
+    "testci": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=json --coverage.reportsDirectory=coverage"
+  },
+  "dependencies": {
+    "@actions/core": "^2",
+    "@actions/github": "^7",
+    "@actions/io": "^2",
+    "@actions/tool-cache": "^3",
+    "semver": "^7.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "@types/semver": "^7.5.8",
+    "@vercel/ncc": "^0",
+    "@vitest/coverage-v8": "^4.0.18",
+    "prettier": "^3",
+    "typescript": "^5",
+    "vitest": "^4.0.16"
+  }
+}
