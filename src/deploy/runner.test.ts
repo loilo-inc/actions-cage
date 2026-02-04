@@ -1,8 +1,8 @@
 import * as core from "@actions/core";
 import { describe, expect, test, vi } from "vitest";
 import { main } from ".";
-import * as deploy from "./src/deploy";
-describe("index", () => {
+import * as deploy from "./deploy";
+describe("runner", () => {
   const input = (key: string, value: string) => {
     vi.spyOn(core, "getInput").mockImplementationOnce((name: string) => {
       expect(name).toBe(key);
