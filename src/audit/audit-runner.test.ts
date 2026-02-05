@@ -36,6 +36,40 @@ describe("run", () => {
     );
   });
 
+  it("should execute audit with audit-context", async () => {
+    vi.mocked(ghaUtil.assertInput).mockImplementation((key) =>
+      key === "region" ? "us-east-1" : "token123",
+    );
+    vi.mocked(core.getInput).mockImplementation((key) => {
+      if (key === "audit-context") return "ctx";
+      if (key === "cluster") return "my-cluster";
+      if (key === "service") return "svc-a";
+      return "";
+    });
+    vi.mocked(ghaUtil.boolify).mockReturnValue(false);
+    vi.mocked(auditModule.audit).mockResolvedValue(undefined);
+
+    await run();
+
+    expect(vi.mocked(auditModule.audit)).toHaveBeenCalledWith({
+      args: [
+        "--region",
+        "us-east-1",
+        "--cluster",
+        "my-cluster",
+        "--service",
+        "svc-a",
+        "ctx",
+      ],
+      issue: {
+        owner: "owner",
+        repo: "repo",
+        token: "token123",
+        title: "Cage audit report",
+      },
+    });
+  });
+
   it("should execute audit with correct args", async () => {
     vi.mocked(ghaUtil.assertInput).mockImplementation((key) =>
       key === "region" ? "us-east-1" : "token123",
@@ -63,7 +97,39 @@ describe("run", () => {
         owner: "owner",
         repo: "repo",
         token: "token123",
-        title: "Cage audit report (us-east-1/my-cluster/my-service)",
+        title: "Cage audit report",
+      },
+    });
+  });
+
+  it("should execute audit for multiple services and keep one issue", async () => {
+    vi.mocked(ghaUtil.assertInput).mockImplementation((key) =>
+      key === "region" ? "us-east-1" : "token123",
+    );
+    vi.mocked(core.getInput).mockImplementation((key) => {
+      if (key === "cluster") return "my-cluster";
+      if (key === "service") return "svc-a,svc-b";
+      return "";
+    });
+    vi.mocked(ghaUtil.boolify).mockReturnValue(false);
+    vi.mocked(auditModule.audit).mockResolvedValue(undefined);
+
+    await run();
+
+    expect(vi.mocked(auditModule.audit)).toHaveBeenCalledWith({
+      args: [
+        "--region",
+        "us-east-1",
+        "--cluster",
+        "my-cluster",
+        "--service",
+        "svc-a,svc-b",
+      ],
+      issue: {
+        owner: "owner",
+        repo: "repo",
+        token: "token123",
+        title: "Cage audit report",
       },
     });
   });
@@ -100,6 +166,7 @@ describe("run", () => {
     );
     vi.mocked(core.getInput).mockImplementation((key) => {
       if (key === "cluster") return "my-cluster";
+      if (key === "service") return "my-service";
       if (key === "cage-options") return "--flag1 value1";
       return "";
     });

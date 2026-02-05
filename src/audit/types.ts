@@ -22,8 +22,8 @@ export type AuditVuln = {
 
 export type AuditResult = {
   region: string;
-  cluster?: string;
-  service?: string;
+  cluster: string;
+  service: string;
   summary: AuditSummary;
   vulns: AuditVuln[];
   scanned_at: string;

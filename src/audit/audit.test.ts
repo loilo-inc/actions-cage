@@ -14,13 +14,20 @@ vi.mock("@actions/core");
 describe("audit", () => {
   const mockOctokit = {
     rest: {
+      users: {
+        getAuthenticated: vi.fn(),
+      },
       issues: {
         listForRepo: vi.fn(),
         update: vi.fn(),
         create: vi.fn(),
+        listComments: vi.fn(),
+        createComment: vi.fn(),
+        updateComment: vi.fn(),
+        getLabel: vi.fn(),
+        createLabel: vi.fn(),
       },
     },
-    paginate: vi.fn(),
     request: vi.fn(),
   };
 
@@ -38,10 +45,18 @@ describe("audit", () => {
       opts?.listeners?.stdout?.(Buffer.from(json));
       return 0;
     });
-    mockOctokit.paginate.mockResolvedValue([]);
+    mockOctokit.rest.users.getAuthenticated.mockResolvedValue({
+      data: { login: "bot" },
+    });
+    mockOctokit.rest.issues.listForRepo.mockResolvedValue({ data: [] });
     mockOctokit.rest.issues.create.mockResolvedValue({
       data: { number: 12, html_url: "https://example.com/issues/12" },
     });
+    mockOctokit.rest.issues.createComment.mockResolvedValue({ data: {} });
+    mockOctokit.rest.issues.updateComment.mockResolvedValue({ data: {} });
+    mockOctokit.rest.issues.listComments.mockResolvedValue({ data: [] });
+    mockOctokit.rest.issues.getLabel.mockResolvedValue({ data: {} });
+    mockOctokit.rest.issues.createLabel.mockResolvedValue({ data: {} });
   });
 
   it("renders markdown summary", () => {
@@ -51,7 +66,7 @@ describe("audit", () => {
     expect(md).toContain("CRITICAL");
   });
 
-  it("executes audit and creates issue", async () => {
+  it("executes audit and creates issue/comment", async () => {
     const result = await executeAudit(["--region", "us-west-2", "ctx"]);
     expect(result.summary.total_count).toBe(sample.summary.total_count);
 
@@ -60,10 +75,108 @@ describe("audit", () => {
       issue: { owner: "o", repo: "r", token: "t", title: "t" },
     });
 
-    expect(mockOctokit.rest.issues.create).toHaveBeenCalled();
+    expect(mockOctokit.rest.users.getAuthenticated).toHaveBeenCalled();
+    expect(mockOctokit.rest.issues.listForRepo).toHaveBeenCalledWith(
+      expect.objectContaining({ labels: "canarycage", creator: "bot" }),
+    );
+    expect(mockOctokit.rest.issues.getLabel).toHaveBeenCalledWith({
+      owner: "o",
+      repo: "r",
+      name: "canarycage",
+    });
+    expect(mockOctokit.rest.issues.create).toHaveBeenCalledWith(
+      expect.objectContaining({ labels: ["canarycage"] }),
+    );
+    expect(mockOctokit.rest.issues.createComment).toHaveBeenCalledWith(
+      expect.objectContaining({ owner: "o", repo: "r", issue_number: 12 }),
+    );
     expect(mockOctokit.request).toHaveBeenCalledWith(
       "PUT /repos/{owner}/{repo}/issues/{issue_number}/pin",
       expect.objectContaining({ owner: "o", repo: "r", issue_number: 12 }),
+    );
+  });
+
+  it("updates existing service comment", async () => {
+    const existingIssue = {
+      number: 12,
+      title: "t",
+      state: "open",
+      labels: ["canarycage"],
+      html_url: "https://example.com/issues/12",
+    };
+    mockOctokit.rest.issues.listForRepo.mockResolvedValue({
+      data: [existingIssue],
+    });
+    mockOctokit.rest.issues.listComments.mockResolvedValue({
+      data: [
+        {
+          id: 99,
+          body: "<!-- cage-audit:service=example-service --> old",
+        },
+      ],
+    });
+
+    await audit({
+      args: ["--region", "us-west-2", "ctx"],
+      issue: { owner: "o", repo: "r", token: "t", title: "t" },
+    });
+
+    expect(mockOctokit.rest.issues.updateComment).toHaveBeenCalledWith(
+      expect.objectContaining({ comment_id: 99 }),
+    );
+    expect(mockOctokit.rest.issues.createComment).not.toHaveBeenCalled();
+  });
+
+  it("fails when existing issue is closed", async () => {
+    const existingIssue = {
+      number: 12,
+      title: "t",
+      state: "closed",
+      labels: ["canarycage"],
+      html_url: "https://example.com/issues/12",
+    };
+    mockOctokit.rest.issues.listForRepo.mockResolvedValue({
+      data: [existingIssue],
+    });
+
+    await expect(
+      audit({
+        args: ["--region", "us-west-2", "ctx"],
+        issue: { owner: "o", repo: "r", token: "t", title: "t" },
+      }),
+    ).rejects.toThrow("is not open");
+  });
+
+  it("fails when existing issue lacks canarycage label", async () => {
+    const existingIssue = {
+      number: 12,
+      title: "t",
+      state: "open",
+      labels: ["other"],
+      html_url: "https://example.com/issues/12",
+    };
+    mockOctokit.rest.issues.listForRepo.mockResolvedValue({
+      data: [existingIssue],
+    });
+
+    await expect(
+      audit({
+        args: ["--region", "us-west-2", "ctx"],
+        issue: { owner: "o", repo: "r", token: "t", title: "t" },
+      }),
+    ).rejects.toThrow("does not have canarycage label");
+  });
+
+  it("creates label when missing", async () => {
+    mockOctokit.rest.issues.getLabel.mockRejectedValue({ status: 404 });
+
+    await audit({
+      args: ["--region", "us-west-2", "ctx"],
+      issue: { owner: "o", repo: "r", token: "t", title: "t" },
+    });
+
+    expect(mockOctokit.rest.issues.createLabel).toHaveBeenCalledWith(
+      expect.objectContaining({ name: "canarycage" }),
     );
   });
 });

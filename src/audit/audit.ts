@@ -6,10 +6,6 @@ import { AuditIssueParams, AuditResult } from "./types";
 
 type Github = InstanceType<typeof gh.GitHub>;
 
-function normalizeSeverity(sev: string): string {
-  return sev ? sev.toUpperCase() : "UNKNOWN";
-}
-
 function markdownEscape(text: string): string {
   return text.replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
 }
@@ -17,11 +13,11 @@ function markdownEscape(text: string): string {
 export function renderAuditSummaryMarkdown(result: AuditResult): string {
   const meta = [
     `- Region: \`${result.region}\``,
-    result.cluster ? `- Cluster: \`${result.cluster}\`` : null,
-    result.service ? `- Service: \`${result.service}\`` : null,
+    `- Cluster: \`${result.cluster}\``,
+    `- Service: \`${result.service}\``,
     `- Scanned At: \`${result.scanned_at}\``,
-    `- Highest Severity: \`${normalizeSeverity(result.summary.highest_severity)}\``,
-  ].filter(Boolean);
+    `- Highest Severity: \`${result.summary.highest_severity}\``,
+  ];
 
   const summaryTable = [
     "| Critical | High | Medium | Low | Info | Total |",
@@ -35,10 +31,8 @@ export function renderAuditSummaryMarkdown(result: AuditResult): string {
   ];
 
   const vulnsRows = result.vulns.map((v) => {
-    const sev = normalizeSeverity(v.cve.severity);
-    const cve = v.cve.uri
-      ? `[${markdownEscape(v.cve.name)}](${v.cve.uri})`
-      : markdownEscape(v.cve.name);
+    const sev = v.cve.severity;
+    const cve = `[${markdownEscape(v.cve.name)}](${v.cve.uri})`;
     const pkg = markdownEscape(v.cve.package_name);
     const ver = markdownEscape(v.cve.package_version);
     const containers = markdownEscape(v.containers.join(", "));
@@ -59,6 +53,23 @@ export function renderAuditSummaryMarkdown(result: AuditResult): string {
     `## Vulnerabilities (${result.summary.total_count})`,
     ...vulnsSection,
   ].join("\n");
+}
+
+function renderIssueBody(): string {
+  return [
+    "Cage audit report.",
+    "",
+    "Results are posted as comments per service.",
+  ].join("\n");
+}
+
+function buildCommentMarker(result: AuditResult): string {
+  return `<!-- cage-audit:service=${result.service} -->`;
+}
+
+function buildCommentBody(result: AuditResult): string {
+  const marker = buildCommentMarker(result);
+  return [marker, renderAuditSummaryMarkdown(result)].join("\n");
 }
 
 export async function runCageAudit(args: string[]): Promise<string> {
@@ -97,41 +108,68 @@ async function findIssueByTitle(
   repo: string,
   title: string,
 ) {
-  const issues = await github.paginate(github.rest.issues.listForRepo, {
+  const me = await github.rest.users.getAuthenticated();
+  const issuesResp = await github.rest.issues.listForRepo({
     owner,
     repo,
     state: "all",
     per_page: 100,
+    labels: "canarycage",
+    creator: me.data.login,
   });
+  const issues = issuesResp.data;
   const match = issues.find(
-    (issue: any) => !issue.pull_request && issue.title === title,
+    (issue) => !issue.pull_request && issue.title === title,
   );
   return match ?? null;
 }
 
-async function upsertIssue(
+async function ensureLabel(
   github: Github,
-  params: AuditIssueParams,
-  body: string,
+  owner: string,
+  repo: string,
+  name: string,
 ) {
+  try {
+    await github.rest.issues.getLabel({ owner, repo, name });
+  } catch (e: any) {
+    if (e?.status !== 404) {
+      throw e;
+    }
+    await github.rest.issues.createLabel({
+      owner,
+      repo,
+      name,
+      color: kLabelColor.slice(1),
+      description: "cage audit reports",
+    });
+  }
+}
+const kLabelColor = "#fbca04";
+
+async function ensureIssue(github: Github, params: AuditIssueParams) {
   const { owner, repo, title } = params;
   const existing = await findIssueByTitle(github, owner, repo, title);
   if (existing) {
-    const updated = await github.rest.issues.update({
-      owner,
-      repo,
-      issue_number: existing.number,
-      title,
-      body,
-      state: "open",
-    });
-    return updated.data;
+    if (existing.state !== "open") {
+      throw new Error(`Issue ${owner}/${repo}#${existing.number} is not open.`);
+    }
+    const existingLabels = existing.labels
+      .map((l) => (typeof l === "string" ? l : l.name))
+      .some((v) => v === "canarycage");
+    if (!existingLabels) {
+      throw new Error(
+        `Issue ${owner}/${repo}#${existing.number} does not have canarycage label.`,
+      );
+    }
+    return existing;
   }
   const created = await github.rest.issues.create({
     owner,
     repo,
     title,
-    body,
+    body: renderIssueBody(),
+    labels: ["canarycage"],
   });
   return created.data;
 }
@@ -152,22 +190,66 @@ async function pinIssue(
   });
 }
 
+async function addIssueComment(
+  github: Github,
+  owner: string,
+  repo: string,
+  issueNumber: number,
+  result: AuditResult,
+) {
+  const marker = buildCommentMarker(result);
+  const commentsResp = await github.rest.issues.listComments({
+    owner,
+    repo,
+    issue_number: issueNumber,
+    per_page: 100,
+  });
+  const comments = commentsResp.data;
+  const existing = comments.find(
+    (comment) =>
+      typeof comment.body === "string" && comment.body.includes(marker),
+  );
+  const body = buildCommentBody(result);
+  if (existing) {
+    await github.rest.issues.updateComment({
+      owner,
+      repo,
+      comment_id: existing.id,
+      body,
+    });
+    return;
+  }
+  await github.rest.issues.createComment({
+    owner,
+    repo,
+    issue_number: issueNumber,
+    body,
+  });
+}
+
 export async function audit({
   args,
   issue,
 }: {
   args: string[];
   issue: AuditIssueParams;
-}) {
+}): Promise<void> {
   const result = await executeAudit(args);
-  const body = renderAuditSummaryMarkdown(result);
   const github = getOctokit(issue.token);
   core.info(
     `Creating or updating issue: ${issue.owner}/${issue.repo}#${issue.title}`,
   );
-  const updated = await upsertIssue(github, issue, body);
-  core.info(`Issue updated: ${updated.html_url}`);
+  await ensureLabel(github, issue.owner, issue.repo, "canarycage");
+  const updated = await ensureIssue(github, issue);
+  core.info(`Issue ready: ${updated.html_url}`);
+  await addIssueComment(
+    github,
+    issue.owner,
+    issue.repo,
+    updated.number,
+    result,
+  );
+  core.info(`Comment added: #${updated.number}`);
   await pinIssue(github, issue.owner, issue.repo, updated.number);
   core.info(`Issue pinned: #${updated.number}`);
-  return { result, issue: updated };
 }
