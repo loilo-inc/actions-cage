@@ -1,14 +1,14 @@
 import * as core from "@actions/core";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import * as modAudit from "./audit/runner";
-import * as modDeploy from "./deploy/runner";
+import * as modAudit from "./audit/audit-runner";
+import * as modDeploy from "./deploy/deploy-runner";
 import { audit, deploy, setup } from "./index";
-import * as modSetup from "./setup/runner";
+import * as modSetup from "./setup/setup-runner";
 
 vi.mock("@actions/core");
-vi.mock("./audit/runner");
-vi.mock("./deploy/runner");
-vi.mock("./setup/runner");
+vi.mock("./audit/audit-runner");
+vi.mock("./deploy/deploy-runner");
+vi.mock("./setup/setup-runner");
 
 describe("index", () => {
   beforeEach(() => {

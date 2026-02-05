@@ -1,7 +1,7 @@
 import * as core from "@actions/core";
 import { describe, expect, test, vi } from "vitest";
 import * as deploy from "./deploy";
-import { run } from "./runner";
+import { run } from "./deploy-runner";
 
 describe("rdeploy/runner", () => {
   const input = (key: string, value: string) => {

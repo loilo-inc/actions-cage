@@ -1,7 +1,7 @@
 import * as core from "@actions/core";
-import * as modAudit from "./audit/runner";
-import * as modDeploy from "./deploy/runner";
-import * as modSetup from "./setup/runner";
+import * as modAudit from "./audit/audit-runner";
+import * as modDeploy from "./deploy/deploy-runner";
+import * as modSetup from "./setup/setup-runner";
 
 async function run(runner: () => Promise<void>) {
   try {
