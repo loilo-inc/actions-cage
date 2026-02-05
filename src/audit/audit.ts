@@ -5,6 +5,7 @@ import type * as gh from "@actions/github/lib/utils";
 import { AuditIssueParams, AuditResult } from "./types";
 
 type Github = InstanceType<typeof gh.GitHub>;
+const kLabelColor = "#fbca04";
 
 function markdownEscape(text: string): string {
   return text.replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
@@ -73,22 +74,11 @@ function buildCommentBody(result: AuditResult): string {
 }
 
 export async function runCageAudit(args: string[]): Promise<string> {
-  const stdout: string[] = [];
-  const stderr: string[] = [];
-  const listeners = {
-    stdout: (data: Buffer) => stdout.push(data.toString()),
-    stderr: (data: Buffer) => stderr.push(data.toString()),
-  };
-  const code = await exec.exec("cage", ["audit", ...args, "--json"], {
-    listeners,
-    ignoreReturnCode: true,
-  });
-  const outText = stdout.join("");
-  const errText = stderr.join("");
-  if (code !== 0) {
-    const detail = [outText, errText].filter(Boolean).join("\n");
-    throw new Error(`cage audit failed with exit code ${code}\n${detail}`);
-  }
+  const { stdout: outText } = await exec.getExecOutput("cage", [
+    "audit",
+    ...args,
+    "--json",
+  ]);
   return outText;
 }
 
@@ -124,7 +114,7 @@ async function findIssueByTitle(
   return match ?? null;
 }
 
-async function ensureLabel(
+export async function ensureLabel(
   github: Github,
   owner: string,
   repo: string,
@@ -145,9 +135,8 @@ async function ensureLabel(
     });
   }
 }
-const kLabelColor = "#fbca04";
 
-async function ensureIssue(github: Github, params: AuditIssueParams) {
+export async function ensureIssue(github: Github, params: AuditIssueParams) {
   const { owner, repo, title } = params;
   const existing = await findIssueByTitle(github, owner, repo, title);
   if (existing) {
