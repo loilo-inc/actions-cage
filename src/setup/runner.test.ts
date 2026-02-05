@@ -18,7 +18,7 @@ vi.mock("@actions/io");
 const mockCore = vi.mocked(core);
 const mockIO = vi.mocked(io);
 
-describe("run", () => {
+describe("setup/runner/run", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

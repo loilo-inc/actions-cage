@@ -1,16 +1,10 @@
 import * as core from "@actions/core";
 import * as io from "@actions/io";
+import { assertInput } from "../util/gha";
 import { downloadCage } from "./download";
 import { fetchReleases } from "./github";
 import { getPlatform } from "./type";
 import { getValidCandidate } from "./validator";
-function assertInput(name: string): string {
-  const v = core.getInput(name);
-  if (!v) {
-    throw new Error(`${name} is required`);
-  }
-  return v;
-}
 
 export async function run() {
   const token = assertInput("github-token");

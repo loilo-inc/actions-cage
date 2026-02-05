@@ -1,20 +1,12 @@
 import * as core from "@actions/core";
-import { parseStringToArgs } from "../deploy/args";
+import { parseStringToArgs } from "../util/args";
+import { assertInput, boolify } from "../util/gha";
 import { audit, executeAudit, renderAuditSummaryMarkdown } from "./audit";
 
-function boolify(s: string): boolean {
-  return s !== "" && !s.match(/^(false|0|undefined|null)$/);
-}
-
-function assertInput(name: string): string {
-  const v = core.getInput(name);
-  if (!v) {
-    throw new Error(`${name} is required`);
-  }
-  return v;
-}
-
-function getRepository(input: string | undefined): { owner: string; repo: string } {
+function getRepository(input: string | undefined): {
+  owner: string;
+  repo: string;
+} {
   const repoStr = input || process.env.GITHUB_REPOSITORY || "";
   const [owner, repo] = repoStr.split("/");
   if (!owner || !repo) {
@@ -35,7 +27,9 @@ export async function run() {
   const dryRun = boolify(core.getInput("dry-run"));
 
   if (!auditContext && (!cluster || !service)) {
-    throw new Error("cluster and service are required when audit-context is not set");
+    throw new Error(
+      "cluster and service are required when audit-context is not set",
+    );
   }
 
   const { owner, repo } = getRepository(repository || undefined);

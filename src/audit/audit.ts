@@ -2,46 +2,9 @@ import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import { getOctokit } from "@actions/github";
 import type * as gh from "@actions/github/lib/utils";
+import { AuditIssueParams, AuditResult } from "./types";
 
 type Github = InstanceType<typeof gh.GitHub>;
-
-export type AuditSummary = {
-  critical_count: number;
-  high_count: number;
-  medium_count: number;
-  low_count: number;
-  info_count: number;
-  total_count: number;
-  highest_severity: string;
-};
-
-export type AuditVuln = {
-  cve: {
-    name: string;
-    description: string;
-    package_name: string;
-    package_version: string;
-    uri: string;
-    severity: string;
-  };
-  containers: string[];
-};
-
-export type AuditResult = {
-  region: string;
-  cluster?: string;
-  service?: string;
-  summary: AuditSummary;
-  vulns: AuditVuln[];
-  scanned_at: string;
-};
-
-export type AuditIssueParams = {
-  owner: string;
-  repo: string;
-  token: string;
-  title: string;
-};
 
 function normalizeSeverity(sev: string): string {
   return sev ? sev.toUpperCase() : "UNKNOWN";
@@ -128,7 +91,12 @@ export async function executeAudit(args: string[]): Promise<AuditResult> {
   return parseAuditJson(raw);
 }
 
-async function findIssueByTitle(github: Github, owner: string, repo: string, title: string) {
+async function findIssueByTitle(
+  github: Github,
+  owner: string,
+  repo: string,
+  title: string,
+) {
   const issues = await github.paginate(github.rest.issues.listForRepo, {
     owner,
     repo,
@@ -168,7 +136,12 @@ async function upsertIssue(
   return created.data;
 }
 
-async function pinIssue(github: Github, owner: string, repo: string, issueNumber: number) {
+async function pinIssue(
+  github: Github,
+  owner: string,
+  repo: string,
+  issueNumber: number,
+) {
   await github.request("PUT /repos/{owner}/{repo}/issues/{issue_number}/pin", {
     owner,
     repo,
@@ -189,7 +162,9 @@ export async function audit({
   const result = await executeAudit(args);
   const body = renderAuditSummaryMarkdown(result);
   const github = getOctokit(issue.token);
-  core.info(`Creating or updating issue: ${issue.owner}/${issue.repo}#${issue.title}`);
+  core.info(
+    `Creating or updating issue: ${issue.owner}/${issue.repo}#${issue.title}`,
+  );
   const updated = await upsertIssue(github, issue, body);
   core.info(`Issue updated: ${updated.html_url}`);
   await pinIssue(github, issue.owner, issue.repo, updated.number);

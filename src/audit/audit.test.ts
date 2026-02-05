@@ -1,18 +1,15 @@
 import * as exec from "@actions/exec";
 import * as github from "@actions/github";
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import {
-  audit,
-  executeAudit,
-  renderAuditSummaryMarkdown,
-  type AuditResult,
-} from "./audit";
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { audit, executeAudit, renderAuditSummaryMarkdown } from "./audit";
+import { AuditResult } from "./types";
 
 vi.mock("@actions/github");
 vi.mock("@actions/exec");
+vi.mock("@actions/core");
 
 describe("audit", () => {
   const mockOctokit = {
@@ -27,7 +24,10 @@ describe("audit", () => {
     request: vi.fn(),
   };
 
-  const samplePath = join(dirname(fileURLToPath(import.meta.url)), "sample.json");
+  const samplePath = join(
+    dirname(fileURLToPath(import.meta.url)),
+    "testdata/audit.json",
+  );
   const sample = JSON.parse(readFileSync(samplePath, "utf-8")) as AuditResult;
 
   beforeEach(() => {
