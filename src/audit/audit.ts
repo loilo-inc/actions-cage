@@ -211,7 +211,7 @@ export async function audit({
   const result = await executeAudit(args);
   const github = getOctokit(issue.token);
   core.info(
-    `Creating or updating issue: ${issue.owner}/${issue.repo}#${issue.title}`,
+    `Creating or updating issue '${issue.title}' in ${issue.owner}/${issue.repo}`,
   );
   await ensureLabel({
     github,
