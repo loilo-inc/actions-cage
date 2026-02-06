@@ -98,19 +98,34 @@ async function findIssueByTitle(
   title: string,
 ) {
   const me = await github.rest.users.getAuthenticated();
-  const issuesResp = await github.rest.issues.listForRepo({
-    owner,
-    repo,
-    state: "all",
-    per_page: 100,
-    labels: "canarycage",
-    creator: me.data.login,
-  });
-  const issues = issuesResp.data;
-  const match = issues.find(
-    (issue) => !issue.pull_request && issue.title === title,
-  );
-  return match ?? null;
+  const perPage = 100;
+  let page = 1;
+  // Paginate through all matching issues to ensure we don't miss any beyond the first page.
+  // Stop when we either find a matching issue or there are no more pages.
+  // We intentionally keep the existing filters (state, label, creator) to avoid changing behavior.
+  while (true) {
+    const issuesResp = await github.rest.issues.listForRepo({
+      owner,
+      repo,
+      state: "all",
+      per_page: perPage,
+      page,
+      labels: "canarycage",
+      creator: me.data.login,
+    });
+    const issues = issuesResp.data;
+    const match = issues.find(
+      (issue) => !issue.pull_request && issue.title === title,
+    );
+    if (match) {
+      return match;
+    }
+    if (issues.length < perPage) {
+      break;
+    }
+    page += 1;
+  }
+  return null;
 }
 
 export async function ensureLabel(
