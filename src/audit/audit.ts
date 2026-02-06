@@ -142,10 +142,10 @@ export async function ensureIssue(github: Github, params: AuditIssueParams) {
     if (existing.state !== "open") {
       throw new Error(`Issue ${owner}/${repo}#${existing.number} is not open.`);
     }
-    const existingLabels = existing.labels
+    const hasCanaryCageLabel = existing.labels
       .map((l) => (typeof l === "string" ? l : l.name))
       .some((v) => v === "canarycage");
-    if (!existingLabels) {
+    if (!hasCanaryCageLabel) {
       throw new Error(
         `Issue ${owner}/${repo}#${existing.number} does not have canarycage label.`,
       );
