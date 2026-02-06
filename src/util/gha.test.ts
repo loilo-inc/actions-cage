@@ -1,6 +1,6 @@
 import * as core from "@actions/core";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { assertInput, parseRef } from "./gha";
+import { assertInput, boolify, parseRef } from "./gha";
 
 vi.mock("@actions/core");
 
@@ -45,6 +45,16 @@ describe("gha", () => {
       expect(() => assertInput("requiredField")).toThrow(
         "requiredField is required",
       );
+    });
+
+    describe("boolify", () => {
+      it("should return true for truthy strings and false for falsy values", () => {
+        expect(boolify("true")).toBe(true);
+        expect(boolify("yes")).toBe(true);
+        expect(boolify("")).toBe(false);
+        expect(boolify("false")).toBe(false);
+        expect(boolify("0")).toBe(false);
+      });
     });
   });
 });
