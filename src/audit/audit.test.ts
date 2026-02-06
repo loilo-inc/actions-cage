@@ -10,7 +10,6 @@ import {
   ensureLabel,
   executeAudit,
   findIssueByTitle,
-  renderAuditSummaryMarkdown,
   runCageAudit,
 } from "./audit";
 import { AuditResult } from "./types";
@@ -363,27 +362,6 @@ describe("runCageAudit", () => {
     await expect(
       runCageAudit(["--region", "us-west-2", "ctx"]),
     ).rejects.toThrow("Some error occurred");
-  });
-});
-
-describe("renderAuditSummaryMarkdown", () => {
-  let okResult: AuditResult;
-  let withVulnResult: AuditResult;
-  beforeAll(async () => {
-    [withVulnResult, okResult] = await Promise.all([
-      readSample("testdata/audit-with-vulns.json"),
-      readSample("testdata/audit-ok.json"),
-    ]);
-  });
-  it("renders markdown summary", async () => {
-    const md = renderAuditSummaryMarkdown(okResult);
-    await expect(md).toMatchFileSnapshot(resolve("testdata/audit-ok.md"));
-  });
-  it("renders markdown with vulnerabilities", async () => {
-    const md = renderAuditSummaryMarkdown(withVulnResult);
-    await expect(md).toMatchFileSnapshot(
-      resolve("testdata/audit-with-vulns.md"),
-    );
   });
 });
 

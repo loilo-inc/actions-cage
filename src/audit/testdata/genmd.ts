@@ -1,7 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { renderAuditSummaryMarkdown } from "../audit";
+import { renderAuditSummaryMarkdown } from "../markdown";
 import type { AuditResult } from "../types";
 const resolve = (path: string) =>
   join(dirname(fileURLToPath(import.meta.url)), path);

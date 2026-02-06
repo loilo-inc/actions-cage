@@ -2,9 +2,11 @@ import * as core from "@actions/core";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as auditModule from "./audit";
 import { run } from "./audit-runner";
+import * as markdownModule from "./markdown";
 
 vi.mock("@actions/core");
 vi.mock("./audit");
+vi.mock("./markdown");
 
 describe("run", () => {
   beforeEach(() => {
@@ -131,7 +133,7 @@ describe("run", () => {
     vi.mocked(auditModule.executeAudit).mockResolvedValue({
       success: true,
     } as any);
-    vi.mocked(auditModule.renderAuditSummaryMarkdown).mockReturnValue(
+    vi.mocked(markdownModule.renderAuditSummaryMarkdown).mockReturnValue(
       "markdown",
     );
     vi.mocked(core.info).mockImplementation(() => {});
