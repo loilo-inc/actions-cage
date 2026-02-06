@@ -91,12 +91,17 @@ export async function executeAudit(args: string[]): Promise<AuditResult> {
   return parseAuditJson(raw);
 }
 
-async function findIssueByTitle(
-  github: Github,
-  owner: string,
-  repo: string,
-  title: string,
-) {
+export async function findIssueByTitle({
+  github,
+  owner,
+  repo,
+  title,
+}: {
+  github: Github;
+  owner: string;
+  repo: string;
+  title: string;
+}) {
   const me = await github.rest.users.getAuthenticated();
   const perPage = 100;
   let page = 1;
@@ -128,12 +133,17 @@ async function findIssueByTitle(
   return null;
 }
 
-export async function ensureLabel(
-  github: Github,
-  owner: string,
-  repo: string,
-  name: string,
-) {
+export async function ensureLabel({
+  github,
+  owner,
+  repo,
+  name,
+}: {
+  github: Github;
+  owner: string;
+  repo: string;
+  name: string;
+}) {
   try {
     await github.rest.issues.getLabel({ owner, repo, name });
   } catch (e: any) {
@@ -152,7 +162,7 @@ export async function ensureLabel(
 
 export async function ensureIssue(github: Github, params: AuditIssueParams) {
   const { owner, repo, title } = params;
-  const existing = await findIssueByTitle(github, owner, repo, title);
+  const existing = await findIssueByTitle({ github, owner, repo, title });
   if (existing) {
     if (existing.state !== "open") {
       throw new Error(`Issue ${owner}/${repo}#${existing.number} is not open.`);
@@ -193,27 +203,65 @@ async function pinIssue(
   });
 }
 
-async function addIssueComment(
-  github: Github,
-  owner: string,
-  repo: string,
-  issueNumber: number,
-  result: AuditResult,
-) {
+export async function findIssueComment({
+  issueNumber,
+  github,
+  result,
+  owner,
+  repo,
+}: {
+  github: Github;
+  result: AuditResult;
+  owner: string;
+  repo: string;
+  issueNumber: number;
+}) {
   const marker = buildCommentMarker(result);
-  const comments = await github.paginate(
-    github.rest.issues.listComments,
-    {
+  let page = 1;
+  const perPage = 100;
+  while (true) {
+    const comments = await github.rest.issues.listComments({
       owner,
       repo,
       issue_number: issueNumber,
       per_page: 100,
-    },
-  );
-  const existing = comments.find(
-    (comment) =>
-      typeof comment.body === "string" && comment.body.includes(marker),
-  );
+      page,
+    });
+    const match = comments.data.find(
+      (comment) =>
+        typeof comment.body === "string" && comment.body.includes(marker),
+    );
+    if (match) {
+      return match;
+    }
+    if (comments.data.length < perPage) {
+      break;
+    }
+    page += 1;
+  }
+  return null;
+}
+
+async function addIssueComment({
+  github,
+  owner,
+  repo,
+  issueNumber,
+  result,
+}: {
+  github: Github;
+  owner: string;
+  repo: string;
+  issueNumber: number;
+  result: AuditResult;
+}) {
+  const existing = await findIssueComment({
+    github,
+    owner,
+    repo,
+    issueNumber,
+    result,
+  });
   const body = buildCommentBody(result);
   if (existing) {
     await github.rest.issues.updateComment({
@@ -244,16 +292,21 @@ export async function audit({
   core.info(
     `Creating or updating issue: ${issue.owner}/${issue.repo}#${issue.title}`,
   );
-  await ensureLabel(github, issue.owner, issue.repo, "canarycage");
+  await ensureLabel({
+    github,
+    owner: issue.owner,
+    repo: issue.repo,
+    name: "canarycage",
+  });
   const updated = await ensureIssue(github, issue);
   core.info(`Issue ready: ${updated.html_url}`);
-  await addIssueComment(
+  await addIssueComment({
     github,
-    issue.owner,
-    issue.repo,
-    updated.number,
+    owner: issue.owner,
+    repo: issue.repo,
+    issueNumber: updated.number,
     result,
-  );
+  });
   core.info(`Comment added: #${updated.number}`);
   await pinIssue(github, issue.owner, issue.repo, updated.number);
   core.info(`Issue pinned: #${updated.number}`);

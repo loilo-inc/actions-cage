@@ -11,18 +11,20 @@ export async function run() {
   const cageOptions = core.getInput("cage-options");
   const token = assertInput("github-token");
   const issueTitle = core.getInput("issue-title") || `Cage audit report`;
-  const repository =
-    core.getInput("github-repository") || process.env.GITHUB_REPOSITORY;
   const dryRun = boolify(core.getInput("dry-run"));
-
+  const { owner, repo } = (() => {
+    const repository = process.env.GITHUB_REPOSITORY;
+    const m = repository?.match(/^(.+?)\/(.+?)$/);
+    if (!m) {
+      throw new Error(`GITHUB_REPOSITORY is not set or invalid: ${repository}`);
+    }
+    const [owner, repo] = [m[1], m[2]];
+    return { owner, repo };
+  })();
   if (!auditContext && (!cluster || !service)) {
     throw new Error(
       "cluster and service are required when audit-context is not set",
     );
-  }
-  const [owner, repo] = repository!.split("/");
-  if (!owner || !repo) {
-    throw new Error("github-repository is required");
   }
   const args: string[] = ["--region", region];
   if (cluster) args.push("--cluster", cluster);

@@ -9,6 +9,7 @@ import {
   ensureIssue,
   ensureLabel,
   executeAudit,
+  findIssueByTitle,
   renderAuditSummaryMarkdown,
   runCageAudit,
 } from "./audit";
@@ -200,7 +201,12 @@ describe("ensureLabel", () => {
   it("ensures label exists when it already exists", async () => {
     mockOctokit.rest.issues.getLabel.mockResolvedValue({ data: {} });
 
-    await ensureLabel(mockOctokit as any, "o", "r", "canarycage");
+    await ensureLabel({
+      github: mockOctokit as any,
+      owner: "o",
+      repo: "r",
+      name: "canarycage",
+    });
 
     expect(mockOctokit.rest.issues.getLabel).toHaveBeenCalledWith({
       owner: "o",
@@ -213,7 +219,12 @@ describe("ensureLabel", () => {
   it("creates label when not found (404)", async () => {
     mockOctokit.rest.issues.getLabel.mockRejectedValue({ status: 404 });
 
-    await ensureLabel(mockOctokit as any, "o", "r", "test-label");
+    await ensureLabel({
+      github: mockOctokit as any,
+      owner: "o",
+      repo: "r",
+      name: "test-label",
+    });
 
     expect(mockOctokit.rest.issues.createLabel).toHaveBeenCalledWith({
       owner: "o",
@@ -228,7 +239,12 @@ describe("ensureLabel", () => {
     mockOctokit.rest.issues.getLabel.mockRejectedValue({ status: 500 });
 
     await expect(
-      ensureLabel(mockOctokit as any, "o", "r", "test-label"),
+      ensureLabel({
+        github: mockOctokit as any,
+        owner: "o",
+        repo: "r",
+        name: "test-label",
+      }),
     ).rejects.toEqual({ status: 500 });
 
     expect(mockOctokit.rest.issues.createLabel).not.toHaveBeenCalled();
@@ -371,5 +387,262 @@ describe("renderAuditSummaryMarkdown", () => {
     await expect(md).toMatchFileSnapshot(
       resolve("testdata/audit-with-vulns.md"),
     );
+  });
+});
+
+describe("findIssueByTitle", () => {
+  let mockOctokit: ReturnType<typeof makeMockOctokit>;
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockOctokit = makeMockOctokit();
+    vi.mocked(github.getOctokit).mockReturnValue(mockOctokit as any);
+    mockOctokit.rest.users.getAuthenticated.mockResolvedValue({
+      data: { login: "bot" },
+    });
+  });
+
+  it("returns issue when found on first page", async () => {
+    const issue = {
+      number: 1,
+      title: "Test Issue",
+      pull_request: undefined,
+    };
+    mockOctokit.rest.issues.listForRepo.mockResolvedValue({
+      data: [issue],
+    });
+
+    const result = await findIssueByTitle({
+      github: mockOctokit as any,
+      owner: "o",
+      repo: "r",
+      title: "Test Issue",
+    });
+
+    expect(result).toEqual(issue);
+    expect(mockOctokit.rest.issues.listForRepo).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns null when issue not found", async () => {
+    mockOctokit.rest.issues.listForRepo.mockResolvedValue({
+      data: [{ number: 1, title: "Other Issue", pull_request: undefined }],
+    });
+
+    const result = await findIssueByTitle({
+      github: mockOctokit as any,
+      owner: "o",
+      repo: "r",
+      title: "Test Issue",
+    });
+
+    expect(result).toBeNull();
+  });
+
+  it("skips pull requests", async () => {
+    const pr = {
+      number: 1,
+      title: "Test Issue",
+      pull_request: { url: "..." },
+    };
+    const issue = {
+      number: 2,
+      title: "Test Issue",
+      pull_request: undefined,
+    };
+    mockOctokit.rest.issues.listForRepo.mockResolvedValue({
+      data: [pr, issue],
+    });
+
+    const result = await findIssueByTitle({
+      github: mockOctokit as any,
+      owner: "o",
+      repo: "r",
+      title: "Test Issue",
+    });
+
+    expect(result).toEqual(issue);
+  });
+
+  it("paginates through multiple pages", async () => {
+    const issue = {
+      number: 101,
+      title: "Test Issue",
+      pull_request: undefined,
+    };
+    mockOctokit.rest.issues.listForRepo
+      .mockResolvedValueOnce({
+        data: Array(100)
+          .fill(null)
+          .map((_, i) => ({
+            number: i,
+            title: "Other",
+            pull_request: undefined,
+          })),
+      })
+      .mockResolvedValueOnce({
+        data: [issue],
+      });
+
+    const result = await findIssueByTitle({
+      github: mockOctokit as any,
+      owner: "o",
+      repo: "r",
+      title: "Test Issue",
+    });
+
+    expect(result).toEqual(issue);
+    expect(mockOctokit.rest.issues.listForRepo).toHaveBeenCalledTimes(2);
+    expect(mockOctokit.rest.issues.listForRepo).toHaveBeenNthCalledWith(2, {
+      owner: "o",
+      repo: "r",
+      state: "all",
+      per_page: 100,
+      page: 2,
+      labels: "canarycage",
+      creator: "bot",
+    });
+  });
+
+  it("stops pagination when page has fewer results", async () => {
+    mockOctokit.rest.issues.listForRepo.mockResolvedValue({
+      data: [{ number: 1, title: "Other", pull_request: undefined }],
+    });
+
+    const result = await findIssueByTitle({
+      github: mockOctokit as any,
+      owner: "o",
+      repo: "r",
+      title: "Test Issue",
+    });
+
+    expect(result).toBeNull();
+    expect(mockOctokit.rest.issues.listForRepo).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("findIssueComment", () => {
+  let mockOctokit: ReturnType<typeof makeMockOctokit>;
+  let withVulnResult: AuditResult;
+
+  beforeAll(async () => {
+    withVulnResult = await readSample("testdata/audit-with-vulns.json");
+  });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockOctokit = makeMockOctokit();
+    vi.mocked(github.getOctokit).mockReturnValue(mockOctokit as any);
+  });
+
+  it("returns comment when found on first page", async () => {
+    const comment = {
+      id: 123,
+      body: "<!-- cage-audit:service=example-service --> content",
+    };
+    mockOctokit.rest.issues.listComments.mockResolvedValue({
+      data: [comment],
+    });
+
+    const { findIssueComment } = await import("./audit");
+    const result = await findIssueComment({
+      github: mockOctokit as any,
+      owner: "o",
+      repo: "r",
+      issueNumber: 42,
+      result: withVulnResult,
+    });
+
+    expect(result).toEqual(comment);
+    expect(mockOctokit.rest.issues.listComments).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns null when comment not found", async () => {
+    mockOctokit.rest.issues.listComments.mockResolvedValue({
+      data: [{ id: 123, body: "no marker here" }],
+    });
+
+    const { findIssueComment } = await import("./audit");
+    const result = await findIssueComment({
+      github: mockOctokit as any,
+      owner: "o",
+      repo: "r",
+      issueNumber: 42,
+      result: withVulnResult,
+    });
+
+    expect(result).toBeNull();
+  });
+
+  it("paginates through multiple pages", async () => {
+    const comment = {
+      id: 999,
+      body: "<!-- cage-audit:service=example-service --> found",
+    };
+    mockOctokit.rest.issues.listComments
+      .mockResolvedValueOnce({
+        data: Array(100)
+          .fill(null)
+          .map((_, i) => ({ id: i, body: `comment ${i}` })),
+      })
+      .mockResolvedValueOnce({
+        data: [comment],
+      });
+
+    const { findIssueComment } = await import("./audit");
+    const result = await findIssueComment({
+      github: mockOctokit as any,
+      owner: "o",
+      repo: "r",
+      issueNumber: 42,
+      result: withVulnResult,
+    });
+
+    expect(result).toEqual(comment);
+    expect(mockOctokit.rest.issues.listComments).toHaveBeenCalledTimes(2);
+    expect(mockOctokit.rest.issues.listComments).toHaveBeenNthCalledWith(2, {
+      owner: "o",
+      repo: "r",
+      issue_number: 42,
+      per_page: 100,
+      page: 2,
+    });
+  });
+
+  it("stops pagination when page has fewer results", async () => {
+    mockOctokit.rest.issues.listComments.mockResolvedValue({
+      data: [{ id: 1, body: "no marker" }],
+    });
+
+    const { findIssueComment } = await import("./audit");
+    const result = await findIssueComment({
+      github: mockOctokit as any,
+      owner: "o",
+      repo: "r",
+      issueNumber: 42,
+      result: withVulnResult,
+    });
+
+    expect(result).toBeNull();
+    expect(mockOctokit.rest.issues.listComments).toHaveBeenCalledTimes(1);
+  });
+
+  it("ignores comments with non-string body", async () => {
+    const comment = {
+      id: 456,
+      body: "<!-- cage-audit:service=example-service --> found",
+    };
+    mockOctokit.rest.issues.listComments.mockResolvedValue({
+      data: [{ id: 123, body: null }, comment],
+    });
+
+    const { findIssueComment } = await import("./audit");
+    const result = await findIssueComment({
+      github: mockOctokit as any,
+      owner: "o",
+      repo: "r",
+      issueNumber: 42,
+      result: withVulnResult,
+    });
+
+    expect(result).toEqual(comment);
   });
 });
