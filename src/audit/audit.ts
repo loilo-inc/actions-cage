@@ -20,7 +20,7 @@ export async function audit({
   const result = await executeAudit(args);
   const github = getOctokit(params.token);
   core.info(
-    `Creating or updating issue: ${params.owner}/${params.repo}#${params.title}`,
+    `Creating or updating issue '${params.title}' in ${params.owner}/${params.repo}`,
   );
   const { owner, repo, title } = params;
   const existing = await findIssueByTitle({ github, owner, repo, title });
