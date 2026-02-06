@@ -9,5 +9,5 @@ export function assertInput(name: string): string {
 }
 
 export function boolify(s: string): boolean {
-  return s !== "" && !s.match(/^(false|0|undefined|null)$/);
+  return s !== "" && !s.match(/^(false|0|undefined|null)$/i);
 }

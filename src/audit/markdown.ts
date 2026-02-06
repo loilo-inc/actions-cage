@@ -65,7 +65,7 @@ export function renderAuditSummaryMarkdown(result: AuditResult): string {
 
 export function renderRow(v: AuditVuln): string {
   const sev = esc(v.cve.severity);
-  const uri = new URL(v.cve.uri).toString().replace(/\|/g, "%7C");
+  const uri = v.cve.uri.replace(/\|/g, "%7C");
   const cve = `[${esc(v.cve.name)}](${uri})`;
   const pkg = esc(v.cve.package_name);
   const ver = esc(v.cve.package_version);

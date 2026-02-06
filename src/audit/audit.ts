@@ -19,24 +19,27 @@ export async function audit({
 }): Promise<void> {
   const result = await executeAudit(args);
   const github = getOctokit(params.token);
+  const { owner, repo, title } = params;
+  const existing = await findIssueByTitle({ github, owner, repo, title });
+  if (result.summary.total_count === 0) {
+    core.info(`No vulnerabilities found.`);
+    if (existing) {
+      core.info(`Closing existing issue #${existing.number}.`);
+      await github.rest.issues.update({
+        owner,
+        repo,
+        issue_number: existing.number,
+        state: "closed",
+        state_reason: "completed",
+      });
+    } else {
+      core.info(`No existing issue to close.`);
+    }
+    return;
+  }
   core.info(
     `Creating or updating issue '${params.title}' in ${params.owner}/${params.repo}`,
   );
-  const { owner, repo, title } = params;
-  const existing = await findIssueByTitle({ github, owner, repo, title });
-  if (existing && result.summary.total_count === 0) {
-    core.info(
-      `No vulnerabilities found. Closing existing issue #${existing.number}.`,
-    );
-    await github.rest.issues.update({
-      owner,
-      repo,
-      issue_number: existing.number,
-      state: "closed",
-      state_reason: "completed",
-    });
-    return;
-  }
   await ensureLabel({
     github,
     owner: params.owner,

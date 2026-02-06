@@ -89,8 +89,22 @@ describe("audit", () => {
 
     await audit({ args: mockArgs, params: mockParams });
 
-    expect(core.info).toHaveBeenCalledWith(
-      "Creating or updating issue 'Security Audit' in test-owner/test-repo",
-    );
+    expect(core.info).toHaveBeenCalledWith(`No vulnerabilities found.`);
+    expect(core.info).toHaveBeenCalledWith(`Closing existing issue #42.`);
+  });
+
+  it("should return early if no existing issue and no vulnerabilities", async () => {
+    const mockResult = { summary: { total_count: 0 } };
+
+    vi.mocked(executeAudit).mockResolvedValue(mockResult as any);
+    vi.mocked(getOctokit).mockReturnValue(mockGithub as any);
+    vi.mocked(findIssueByTitle).mockResolvedValue(null);
+
+    await audit({ args: mockArgs, params: mockParams });
+
+    expect(mockGithub.rest.issues.update).not.toHaveBeenCalled();
+    expect(ensureLabel).not.toHaveBeenCalled();
+    expect(ensureIssue).not.toHaveBeenCalled();
+    expect(addIssueComment).not.toHaveBeenCalled();
   });
 });
