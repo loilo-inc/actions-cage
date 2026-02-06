@@ -41,7 +41,8 @@ export function renderAuditSummaryMarkdown(result: AuditResult): string {
 
   const vulnsRows = result.vulns.map((v) => {
     const sev = esc(v.cve.severity);
-    const cve = `[${esc(v.cve.name)}](${v.cve.uri})`;
+    const uri = encodeURIComponent(v.cve.uri);
+    const cve = `[${esc(v.cve.name)}](${uri})`;
     const pkg = esc(v.cve.package_name);
     const ver = esc(v.cve.package_version);
     const containers = esc(v.containers.join(", "));
@@ -81,10 +82,10 @@ export function renderIssueBody(): string {
 export function buildCommentMarker(
   result: Pick<AuditResult, "service" | "cluster" | "region">,
 ): string {
-  const sanityze = (s: string) => s.replace(/-->/g, "").trim();
-  const cluster = sanityze(result.cluster);
-  const region = sanityze(result.region);
-  const service = sanityze(result.service);
+  const sanitize = (s: string) => s.replace(/-->/g, "").trim();
+  const cluster = sanitize(result.cluster);
+  const region = sanitize(result.region);
+  const service = sanitize(result.service);
   const sanitized = `region=${region};cluster=${cluster};service=${service}`;
   return `<!-- cage-audit:${sanitized} -->`;
 }

@@ -1,7 +1,8 @@
 import * as core from "@actions/core";
 import { parseStringToArgs } from "../util/args";
 import { assertInput, boolify } from "../util/gha";
-import { audit, executeAudit } from "./audit";
+import { audit } from "./audit";
+import { executeAudit } from "./audit-cage";
 import { renderAuditSummaryMarkdown } from "./markdown";
 
 export async function run() {
@@ -44,6 +45,6 @@ export async function run() {
   }
   await audit({
     args,
-    issue: { owner, repo, token, title: issueTitle },
+    params: { owner, repo, token, title: issueTitle },
   });
 }

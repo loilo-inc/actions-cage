@@ -1,12 +1,13 @@
 import * as core from "@actions/core";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as auditModule from "./audit";
+import * as cageModule from "./audit-cage";
 import { run } from "./audit-runner";
 import * as markdownModule from "./markdown";
-
 vi.mock("@actions/core");
 vi.mock("./audit");
 vi.mock("./markdown");
+vi.mock("./audit-cage");
 
 describe("run", () => {
   beforeEach(() => {
@@ -67,7 +68,7 @@ describe("run", () => {
         "svc-a",
         "ctx",
       ],
-      issue: {
+      params: {
         owner: "owner",
         repo: "repo",
         token: "token123",
@@ -97,7 +98,7 @@ describe("run", () => {
         "--service",
         "my-service",
       ],
-      issue: {
+      params: {
         owner: "owner",
         repo: "repo",
         token: "token123",
@@ -127,7 +128,7 @@ describe("run", () => {
         "--service",
         "svc-a,svc-b",
       ],
-      issue: {
+      params: {
         owner: "owner",
         repo: "repo",
         token: "token123",
@@ -144,7 +145,7 @@ describe("run", () => {
       if (key === "dry-run") return "true";
       return "";
     });
-    vi.mocked(auditModule.executeAudit).mockResolvedValue({
+    vi.mocked(cageModule.executeAudit).mockResolvedValue({
       success: true,
     } as any);
     vi.mocked(markdownModule.renderAuditSummaryMarkdown).mockReturnValue(
@@ -154,7 +155,7 @@ describe("run", () => {
 
     await run();
 
-    expect(vi.mocked(auditModule.executeAudit)).toHaveBeenCalled();
+    expect(vi.mocked(cageModule.executeAudit)).toHaveBeenCalled();
     expect(vi.mocked(auditModule.audit)).not.toHaveBeenCalled();
     expect(vi.mocked(core.info)).toHaveBeenCalledWith(
       expect.stringContaining("Dry run"),

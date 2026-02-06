@@ -39,7 +39,7 @@ export function parseStringToArgs(rawArgs: string): string[] {
       }
     }
 
-    return value ?? null;
+    return value;
   };
 
   while (idx < rawArgs.length) {

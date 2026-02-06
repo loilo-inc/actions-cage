@@ -19,25 +19,6 @@ async function readSample(path: string): Promise<AuditResult> {
 }
 
 describe("renderAuditSummaryMarkdown", () => {
-  let okResult: AuditResult;
-  let withVulnResult: AuditResult;
-  beforeAll(async () => {
-    [withVulnResult, okResult] = await Promise.all([
-      readSample("testdata/audit-with-vulns.json"),
-      readSample("testdata/audit-ok.json"),
-    ]);
-  });
-  it("renders markdown summary", async () => {
-    const md = renderAuditSummaryMarkdown(okResult);
-    await expect(md).toMatchFileSnapshot(resolve("testdata/audit-ok.md"));
-  });
-  it("renders markdown with vulnerabilities", async () => {
-    const md = renderAuditSummaryMarkdown(withVulnResult);
-    await expect(md).toMatchFileSnapshot(
-      resolve("testdata/audit-with-vulns.md"),
-    );
-  });
-
   it("should escape pipe characters in metadata", () => {
     const result: AuditResult = {
       region: "us|east",
@@ -151,6 +132,22 @@ describe("renderIssueBody", () => {
 });
 
 describe("buildCommentBody", () => {
+  let okResult: AuditResult;
+  let withVulnResult: AuditResult;
+  beforeAll(async () => {
+    [withVulnResult, okResult] = await Promise.all([
+      readSample("testdata/audit-with-vulns.json"),
+      readSample("testdata/audit-ok.json"),
+    ]);
+  });
+  it("renders markdown summary", async () => {
+    const md = buildCommentBody(okResult);
+    expect(md).toMatchSnapshot();
+  });
+  it("renders markdown with vulnerabilities", async () => {
+    const md = buildCommentBody(withVulnResult);
+    expect(md).toMatchSnapshot();
+  });
   it("should include marker and rendered markdown", () => {
     const result: AuditResult = {
       region: "us-east",
