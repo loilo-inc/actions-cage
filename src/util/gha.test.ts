@@ -46,15 +46,15 @@ describe("gha", () => {
         "requiredField is required",
       );
     });
+  });
 
-    describe("boolify", () => {
-      it("should return true for truthy strings and false for falsy values", () => {
-        expect(boolify("true")).toBe(true);
-        expect(boolify("yes")).toBe(true);
-        expect(boolify("")).toBe(false);
-        expect(boolify("false")).toBe(false);
-        expect(boolify("0")).toBe(false);
-      });
+  describe("boolify", () => {
+    it("should return true for truthy strings and false for falsy values", () => {
+      expect(boolify("true")).toBe(true);
+      expect(boolify("yes")).toBe(true);
+      expect(boolify("")).toBe(false);
+      expect(boolify("false")).toBe(false);
+      expect(boolify("0")).toBe(false);
     });
   });
 });
