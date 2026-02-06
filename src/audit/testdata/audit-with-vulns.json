@@ -1,0 +1,39 @@
+{
+  "region": "us-west-2",
+  "cluster": "example-cluster",
+  "service": "example-service",
+  "summary": {
+    "critical_count": 1,
+    "high_count": 1,
+    "medium_count": 0,
+    "low_count": 0,
+    "info_count": 0,
+    "total_count": 2,
+    "highest_severity": "CRITICAL"
+  },
+  "vulns": [
+    {
+      "cve": {
+        "name": "CVE-2026-0001",
+        "description": "Example critical vulnerability.",
+        "package_name": "openssl",
+        "package_version": "3.0.0",
+        "uri": "https://nvd.nist.gov/vuln/detail/CVE-2026-0001",
+        "severity": "CRITICAL"
+      },
+      "containers": ["app"]
+    },
+    {
+      "cve": {
+        "name": "CVE-2026-0002",
+        "description": "Example high vulnerability.",
+        "package_name": "libexpat",
+        "package_version": "2.7.1",
+        "uri": "https://nvd.nist.gov/vuln/detail/CVE-2026-0002",
+        "severity": "HIGH"
+      },
+      "containers": ["app", "worker"]
+    }
+  ],
+  "scanned_at": "2026-02-05T12:00:00Z"
+}

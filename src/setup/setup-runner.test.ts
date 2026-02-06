@@ -3,7 +3,7 @@ import * as io from "@actions/io";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { downloadCage } from "./download";
 import { fetchReleases } from "./github";
-import { run } from "./runner";
+import { run } from "./setup-runner";
 import { makeTestCageInfo } from "./testdata/testing";
 import { getPlatform } from "./type";
 import { getValidCandidate } from "./validator";
@@ -18,7 +18,7 @@ vi.mock("@actions/io");
 const mockCore = vi.mocked(core);
 const mockIO = vi.mocked(io);
 
-describe("run", () => {
+describe("setup/runner/run", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

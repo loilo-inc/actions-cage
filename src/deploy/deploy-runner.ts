@@ -1,22 +1,11 @@
 import * as core from "@actions/core";
-import { parseStringToArgs } from "./args";
+import { parseStringToArgs } from "../util/args";
+import { assertInput, boolify } from "../util/gha";
 import {
   aggregateDeploymentParams,
   deploy,
   GithubDeploymentParams,
 } from "./deploy";
-
-function boolify(s: string): boolean {
-  return s !== "" && !s.match(/^(false|0|undefined|null)$/);
-}
-
-function assertInput(name: string): string {
-  const v = core.getInput(name);
-  if (!v) {
-    throw new Error(`${name} is required`);
-  }
-  return v;
-}
 
 export async function run() {
   const deployContext = assertInput("deploy-context");

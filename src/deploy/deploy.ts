@@ -4,8 +4,7 @@ import { getOctokit } from "@actions/github";
 import type * as gh from "@actions/github/lib/utils";
 
 type Github = InstanceType<typeof gh.GitHub>;
-
-export function parseRef(ref: string): string {
+function parseRef(ref: string): string {
   // refs/heads/master -> master
   // refs/tags/v0.1.0 -> v0.1.0
   const m = ref.match(/^refs\/.+?\/(.+?)$/);
