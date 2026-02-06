@@ -2,20 +2,15 @@ import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import { getOctokit } from "@actions/github";
 import type * as gh from "@actions/github/lib/utils";
-import { renderAuditSummaryMarkdown, renderIssueBody } from "./markdown";
+import {
+  buildCommentBody,
+  buildCommentMarker,
+  renderIssueBody,
+} from "./markdown";
 import { AuditIssueParams, AuditResult } from "./types";
 
 type Github = InstanceType<typeof gh.GitHub>;
 const kLabelColor = "#fbca04";
-
-function buildCommentMarker(result: AuditResult): string {
-  return `<!-- cage-audit:service=${result.service} -->`;
-}
-
-function buildCommentBody(result: AuditResult): string {
-  const marker = buildCommentMarker(result);
-  return [marker, renderAuditSummaryMarkdown(result)].join("\n");
-}
 
 export async function runCageAudit(args: string[]): Promise<string> {
   const { stdout: outText } = await exec.getExecOutput("cage", [
@@ -160,23 +155,23 @@ export async function findIssueComment({
 }) {
   const marker = buildCommentMarker(result);
   let page = 1;
-  const perPage = 100;
+  const per_page = 100;
   while (true) {
     const comments = await github.rest.issues.listComments({
       owner,
       repo,
       issue_number: issueNumber,
-      per_page: 100,
+      per_page,
       page,
     });
     const match = comments.data.find(
       (comment) =>
-        typeof comment.body === "string" && comment.body.includes(marker),
+        typeof comment.body === "string" && comment.body.startsWith(marker),
     );
     if (match) {
       return match;
     }
-    if (comments.data.length < perPage) {
+    if (comments.data.length < per_page) {
       break;
     }
     page += 1;

@@ -1,36 +1,53 @@
 export function parseStringToArgs(rawArgs: string): string[] {
-  // parse string like '--canaryTaskIdleDuration "value of any" --updateService'
-  // into ['--canaryTaskIdleDuration', 'value of any', '--updateService']
+  if (!rawArgs || typeof rawArgs !== "string") {
+    return [];
+  }
+
+  const args: string[] = [];
   let idx = 0;
-  let args: string[] = [];
-  function skipWs(): void {
+
+  const skipWs = (): void => {
     while (idx < rawArgs.length && rawArgs[idx] === " ") {
       idx += 1;
     }
-  }
-  function readValue(): string {
+  };
+
+  const readValue = (): string | null => {
     skipWs();
+
+    if (idx >= rawArgs.length) {
+      return null;
+    }
+
     let value = "";
-    let quoteType: string | null = null;
-    if (rawArgs[idx] === '"' || rawArgs[idx] === "'") {
-      quoteType = rawArgs[idx];
+    const quoteChar =
+      rawArgs[idx] === '"' || rawArgs[idx] === "'" ? rawArgs[idx] : null;
+
+    if (quoteChar) {
       idx += 1;
-    }
-    while (idx < rawArgs.length) {
-      if (quoteType && rawArgs[idx] === quoteType) {
+      while (idx < rawArgs.length && rawArgs[idx] !== quoteChar) {
+        value += rawArgs[idx];
         idx += 1;
-        break;
       }
-      if (!quoteType && rawArgs[idx] === " ") {
-        break;
+      if (idx < rawArgs.length && rawArgs[idx] === quoteChar) {
+        idx += 1;
       }
-      value += rawArgs[idx];
-      idx += 1;
+    } else {
+      while (idx < rawArgs.length && rawArgs[idx] !== " ") {
+        value += rawArgs[idx];
+        idx += 1;
+      }
     }
-    return value;
-  }
+
+    return value ?? null;
+  };
+
   while (idx < rawArgs.length) {
-    args.push(readValue());
+    const value = readValue();
+    if (value != null) {
+      args.push(value);
+    }
   }
+
   return args;
 }

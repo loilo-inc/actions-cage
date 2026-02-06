@@ -1,22 +1,37 @@
 import { AuditResult } from "./types";
 
-function markdownEscape(text: string): string {
+function esc(text: string): string {
   return text.replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
 }
 
 export function renderAuditSummaryMarkdown(result: AuditResult): string {
+  const {
+    region,
+    cluster,
+    service,
+    scanned_at,
+    summary: {
+      highest_severity,
+      critical_count,
+      high_count,
+      medium_count,
+      low_count,
+      info_count,
+      total_count,
+    },
+  } = result;
   const meta = [
-    `- Region: \`${result.region}\``,
-    `- Cluster: \`${result.cluster}\``,
-    `- Service: \`${result.service}\``,
-    `- Scanned At: \`${result.scanned_at}\``,
-    `- Highest Severity: \`${result.summary.highest_severity}\``,
+    `- Region: \`${esc(region)}\``,
+    `- Cluster: \`${esc(cluster)}\``,
+    `- Service: \`${esc(service)}\``,
+    `- Scanned At: \`${esc(scanned_at)}\``,
+    `- Highest Severity: \`${esc(highest_severity)}\``,
   ];
 
   const summaryTable = [
     "| Critical | High | Medium | Low | Info | Total |",
     "| --- | --- | --- | --- | --- | --- |",
-    `| ${result.summary.critical_count} | ${result.summary.high_count} | ${result.summary.medium_count} | ${result.summary.low_count} | ${result.summary.info_count} | ${result.summary.total_count} |`,
+    `| ${critical_count} | ${high_count} | ${medium_count} | ${low_count} | ${info_count} | ${total_count} |`,
   ];
 
   const vulnsHeader = [
@@ -25,11 +40,11 @@ export function renderAuditSummaryMarkdown(result: AuditResult): string {
   ];
 
   const vulnsRows = result.vulns.map((v) => {
-    const sev = v.cve.severity;
-    const cve = `[${markdownEscape(v.cve.name)}](${v.cve.uri})`;
-    const pkg = markdownEscape(v.cve.package_name);
-    const ver = markdownEscape(v.cve.package_version);
-    const containers = markdownEscape(v.containers.join(", "));
+    const sev = esc(v.cve.severity);
+    const cve = `[${esc(v.cve.name)}](${v.cve.uri})`;
+    const pkg = esc(v.cve.package_name);
+    const ver = esc(v.cve.package_version);
+    const containers = esc(v.containers.join(", "));
     return `| ${sev} | ${cve} | ${pkg} | ${ver} | ${containers} |`;
   });
 
@@ -61,4 +76,20 @@ export function renderIssueBody(): string {
     "",
     "Results are posted as comments per service.",
   ].join("\n");
+}
+
+export function buildCommentMarker(
+  result: Pick<AuditResult, "service" | "cluster" | "region">,
+): string {
+  const sanityze = (s: string) => s.replace(/-->/g, "").trim();
+  const cluster = sanityze(result.cluster);
+  const region = sanityze(result.region);
+  const service = sanityze(result.service);
+  const sanitized = `region=${region};cluster=${cluster};service=${service}`;
+  return `<!-- cage-audit:${sanitized} -->`;
+}
+
+export function buildCommentBody(result: AuditResult): string {
+  const marker = buildCommentMarker(result);
+  return [marker, renderAuditSummaryMarkdown(result)].join("\n");
 }

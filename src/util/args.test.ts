@@ -11,3 +11,20 @@ describe("args", () => {
     expect(parseStringToArgs(v)).toEqual(exp);
   });
 });
+
+test.each([
+  ["", []],
+  ["--flag", ["--flag"]],
+  ["  --flag  ", ["--flag"]],
+  ["--flag1 --flag2", ["--flag1", "--flag2"]],
+  ['--key "value with spaces"', ["--key", "value with spaces"]],
+  ["--key 'value with spaces'", ["--key", "value with spaces"]],
+  ["--a \"b\" --c 'd' --e", ["--a", "b", "--c", "d", "--e"]],
+  ['--mixed "quoted arg" unquoted', ["--mixed", "quoted arg", "unquoted"]],
+  ['--empty ""', ["--empty", ""]],
+  ["--single ''", ["--single", ""]],
+  ['--special "!@#$%"', ["--special", "!@#$%"]],
+  ["--multiple   spaces", ["--multiple", "spaces"]],
+])("parseStringToArgs edge cases", (input, expected) => {
+  expect(parseStringToArgs(input)).toEqual(expected);
+});

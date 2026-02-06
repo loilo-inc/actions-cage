@@ -1,3 +1,4 @@
+<!-- cage-audit:service=ZXhhbXBsZS1zZXJ2aWNl -->
 ## Scan Summary
 - Region: `us-west-2`
 - Cluster: `example-cluster`

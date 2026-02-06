@@ -12,6 +12,7 @@ import {
   findIssueByTitle,
   runCageAudit,
 } from "./audit";
+import { buildCommentMarker } from "./markdown";
 import { AuditResult } from "./types";
 
 vi.mock("@actions/github");
@@ -130,6 +131,7 @@ describe("audit", () => {
       labels: ["canarycage"],
       html_url: "https://example.com/issues/12",
     };
+    const marker = buildCommentMarker(withVulnResult);
     mockOctokit.rest.issues.listForRepo.mockResolvedValue({
       data: [existingIssue],
     });
@@ -137,7 +139,7 @@ describe("audit", () => {
       data: [
         {
           id: 99,
-          body: "<!-- cage-audit:service=example-service --> old",
+          body: `${marker}\nOld content`,
         },
       ],
     });
@@ -511,7 +513,7 @@ describe("findIssueComment", () => {
   it("returns comment when found on first page", async () => {
     const comment = {
       id: 123,
-      body: "<!-- cage-audit:service=example-service --> content",
+      body: `${buildCommentMarker(withVulnResult)} found`,
     };
     mockOctokit.rest.issues.listComments.mockResolvedValue({
       data: [comment],
@@ -550,7 +552,7 @@ describe("findIssueComment", () => {
   it("paginates through multiple pages", async () => {
     const comment = {
       id: 999,
-      body: "<!-- cage-audit:service=example-service --> found",
+      body: `${buildCommentMarker(withVulnResult)} found`,
     };
     mockOctokit.rest.issues.listComments
       .mockResolvedValueOnce({
@@ -603,7 +605,7 @@ describe("findIssueComment", () => {
   it("ignores comments with non-string body", async () => {
     const comment = {
       id: 456,
-      body: "<!-- cage-audit:service=example-service --> found",
+      body: `${buildCommentMarker(withVulnResult)} found`,
     };
     mockOctokit.rest.issues.listComments.mockResolvedValue({
       data: [{ id: 123, body: null }, comment],

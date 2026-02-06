@@ -2,9 +2,17 @@ import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import { getOctokit } from "@actions/github";
 import type * as gh from "@actions/github/lib/utils";
-import { parseRef } from "../util/gha";
 
 type Github = InstanceType<typeof gh.GitHub>;
+function parseRef(ref: string): string {
+  // refs/heads/master -> master
+  // refs/tags/v0.1.0 -> v0.1.0
+  const m = ref.match(/^refs\/.+?\/(.+?)$/);
+  if (m) {
+    return m[1];
+  }
+  return ref;
+}
 
 export function aggregateDeploymentParams({
   environment,
