@@ -186,13 +186,15 @@ async function addIssueComment(
   result: AuditResult,
 ) {
   const marker = buildCommentMarker(result);
-  const commentsResp = await github.rest.issues.listComments({
-    owner,
-    repo,
-    issue_number: issueNumber,
-    per_page: 100,
-  });
-  const comments = commentsResp.data;
+  const comments = await github.paginate(
+    github.rest.issues.listComments,
+    {
+      owner,
+      repo,
+      issue_number: issueNumber,
+      per_page: 100,
+    },
+  );
   const existing = comments.find(
     (comment) =>
       typeof comment.body === "string" && comment.body.includes(marker),
