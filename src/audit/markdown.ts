@@ -1,7 +1,7 @@
 import { AuditResult, AuditVuln } from "./types";
 
-function esc(text: string): string {
-  return text.replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
+export function esc(text: string): string {
+  return text.replace(/\|/g, "\\|").replace(/\r?\n/g, " ").replace(/`/g, "\\`");
 }
 
 export function renderAuditSummaryMarkdown(result: AuditResult): string {

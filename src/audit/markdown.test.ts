@@ -5,6 +5,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import {
   buildCommentBody,
   buildCommentMarker,
+  esc,
   renderAuditSummaryMarkdown,
   renderIssueBody,
   renderRow,
@@ -333,5 +334,35 @@ describe("renderRow", () => {
     };
     const row = renderRow(vuln);
     expect(row).toContain("app, worker, web");
+  });
+});
+
+describe("esc", () => {
+  it("should escape pipe characters", () => {
+    expect(esc("foo|bar")).toBe("foo\\|bar");
+    expect(esc("a|b|c")).toBe("a\\|b\\|c");
+  });
+
+  it("should escape backticks", () => {
+    expect(esc("foo`bar")).toBe("foo\\`bar");
+    expect(esc("`code`")).toBe("\\`code\\`");
+  });
+
+  it("should convert newlines to spaces", () => {
+    expect(esc("foo\nbar")).toBe("foo bar");
+    expect(esc("foo\r\nbar")).toBe("foo bar");
+  });
+
+  it("should handle multiple escape types", () => {
+    expect(esc("foo|bar`baz\nqux")).toBe("foo\\|bar\\`baz qux");
+    expect(esc("`code|with\nnewline`")).toBe("\\`code\\|with newline\\`");
+  });
+
+  it("should handle empty string", () => {
+    expect(esc("")).toBe("");
+  });
+
+  it("should not modify text without special characters", () => {
+    expect(esc("normal text")).toBe("normal text");
   });
 });
