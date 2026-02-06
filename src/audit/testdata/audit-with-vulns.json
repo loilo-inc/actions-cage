@@ -4,11 +4,11 @@
   "service": "example-service",
   "summary": {
     "critical_count": 1,
-    "high_count": 2,
-    "medium_count": 3,
-    "low_count": 4,
+    "high_count": 1,
+    "medium_count": 0,
+    "low_count": 0,
     "info_count": 0,
-    "total_count": 10,
+    "total_count": 2,
     "highest_severity": "CRITICAL"
   },
   "vulns": [

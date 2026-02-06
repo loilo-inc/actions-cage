@@ -18,6 +18,9 @@ vi.mock("@actions/github");
 vi.mock("@actions/exec");
 vi.mock("@actions/core");
 
+const resolve = (path: string) =>
+  join(dirname(fileURLToPath(import.meta.url)), path);
+
 const makeMockOctokit = () => {
   return {
     rest: {
@@ -39,22 +42,23 @@ const makeMockOctokit = () => {
   };
 };
 
+const readSample = async (file: string): Promise<AuditResult> => {
+  const data = await readFile(resolve(file), "utf-8");
+  return JSON.parse(data) as AuditResult;
+};
+
 describe("audit", () => {
-  let sample: AuditResult;
+  let withVulnResult: AuditResult;
   let mockOctokit: ReturnType<typeof makeMockOctokit>;
   beforeAll(async () => {
-    const samplePath = join(
-      dirname(fileURLToPath(import.meta.url)),
-      "testdata/audit.json",
-    );
-    sample = JSON.parse(await readFile(samplePath, "utf-8")) as AuditResult;
+    withVulnResult = await readSample("testdata/audit-with-vulns.json");
   });
   beforeEach(() => {
     vi.clearAllMocks();
     mockOctokit = makeMockOctokit();
     vi.mocked(github.getOctokit).mockReturnValue(mockOctokit as any);
     vi.mocked(exec.getExecOutput).mockImplementation(async (_cmd, _args) => {
-      const json = JSON.stringify(sample);
+      const json = JSON.stringify(withVulnResult);
       return { exitCode: 0, stdout: json, stderr: "" };
     });
     mockOctokit.rest.users.getAuthenticated.mockResolvedValue({
@@ -71,16 +75,9 @@ describe("audit", () => {
     mockOctokit.rest.issues.createLabel.mockResolvedValue({ data: {} });
   });
 
-  it("renders markdown summary", () => {
-    const md = renderAuditSummaryMarkdown(sample as AuditResult);
-    expect(md).toContain("|CONTAINER");
-    expect(md).toContain("## CRITICAL");
-    expect(md).toContain("## Total");
-  });
-
   it("executes audit and creates issue/comment", async () => {
     const result = await executeAudit(["--region", "us-west-2", "ctx"]);
-    expect(result.summary.total_count).toBe(sample.summary.total_count);
+    expect(result.summary.total_count).toBe(withVulnResult.summary.total_count);
 
     await audit({
       args: ["--region", "us-west-2", "ctx"],
@@ -357,62 +354,22 @@ describe("runCageAudit", () => {
 });
 
 describe("renderAuditSummaryMarkdown", () => {
-  it("renders markdown with vulnerabilities", () => {
-    const md = renderAuditSummaryMarkdown(sample);
-    expect(md).toContain("## Scan Summary");
-    expect(md).toContain(`- Region: \`${sample.region}\``);
-    expect(md).toContain(`- Cluster: \`${sample.cluster}\``);
-    expect(md).toContain(`- Service: \`${sample.service}\``);
-    expect(md).toContain(`- Scanned At: \`${sample.scanned_at}\``);
-    expect(md).toContain(
-      `- Highest Severity: \`${sample.summary.highest_severity}\``,
-    );
-    expect(md).toContain("| Critical | High | Medium | Low | Info | Total |");
-    expect(md).toContain(
-      `| ${sample.summary.critical_count} | ${sample.summary.high_count} | ${sample.summary.medium_count} | ${sample.summary.low_count} | ${sample.summary.info_count} | ${sample.summary.total_count} |`,
-    );
-    expect(md).toContain(`## Vulnerabilities (${sample.summary.total_count})`);
-    expect(md).toContain("| Severity | CVE | Package | Version | Containers |");
+  let okResult: AuditResult;
+  let withVulnResult: AuditResult;
+  beforeAll(async () => {
+    [withVulnResult, okResult] = await Promise.all([
+      readSample("testdata/audit-with-vulns.json"),
+      readSample("testdata/audit-ok.json"),
+    ]);
   });
-
-  it("renders markdown with no vulnerabilities", () => {
-    const emptyResult: AuditResult = {
-      ...sample,
-      vulns: [],
-      summary: { ...sample.summary, total_count: 0 },
-    };
-    const md = renderAuditSummaryMarkdown(emptyResult);
-    expect(md).toContain("No vulnerabilities found.");
-    expect(md).not.toContain(
-      "| Severity | CVE | Package | Version | Containers |",
+  it("renders markdown summary", async () => {
+    const md = renderAuditSummaryMarkdown(okResult);
+    await expect(md).toMatchFileSnapshot(resolve("testdata/audit-ok.md"));
+  });
+  it("renders markdown with vulnerabilities", async () => {
+    const md = renderAuditSummaryMarkdown(withVulnResult);
+    await expect(md).toMatchFileSnapshot(
+      resolve("testdata/audit-with-vulns.md"),
     );
-  });
-
-  it("escapes pipe characters in vulnerability data", () => {
-    const resultWithPipes: AuditResult = {
-      ...sample,
-      vulns: [
-        {
-          ...sample.vulns[0],
-          cve: { ...sample.vulns[0].cve, package_name: "pkg|name" },
-        },
-      ],
-    };
-    const md = renderAuditSummaryMarkdown(resultWithPipes);
-    expect(md).toContain("pkg\\|name");
-  });
-
-  it("escapes newlines in vulnerability data", () => {
-    const resultWithNewlines: AuditResult = {
-      ...sample,
-      vulns: [
-        {
-          ...sample.vulns[0],
-          containers: ["container\nwith\nnewlines"],
-        },
-      ],
-    };
-    const md = renderAuditSummaryMarkdown(resultWithNewlines);
-    expect(md).toContain("container with newlines");
   });
 });

@@ -42,9 +42,8 @@ export function renderAuditSummaryMarkdown(result: AuditResult): string {
 
   const vulnsSection =
     result.vulns.length === 0
-      ? ["No vulnerabilities found."]
+      ? ["🐣 No vulnerabilities found! "]
       : [...vulnsHeader, ...vulnsRows];
-
   return [
     "## Scan Summary",
     ...meta,
