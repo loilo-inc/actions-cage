@@ -7,8 +7,9 @@ import {
   buildCommentMarker,
   renderAuditSummaryMarkdown,
   renderIssueBody,
+  renderRow,
 } from "./markdown";
-import type { AuditResult } from "./types";
+import type { AuditResult, AuditVuln } from "./types";
 
 async function readSample(path: string): Promise<AuditResult> {
   const data = await readFile(
@@ -230,5 +231,107 @@ describe("buildCommentMarker", () => {
     expect(marker).toBe(
       "<!-- cage-audit:region=useastregion;cluster=prod;service=api -->",
     );
+  });
+});
+
+describe("renderRow", () => {
+  it("should render a vulnerability row with all fields", () => {
+    const vuln: AuditVuln = {
+      cve: {
+        name: "CVE-2024-1234",
+        uri: "https://example.com/cve/2024-1234",
+        severity: "critical",
+        description: "Test vulnerability",
+        package_name: "openssl",
+        package_version: "1.0.0",
+      },
+      containers: ["container-1", "container-2"],
+    };
+    const row = renderRow(vuln);
+    expect(row).toBe(
+      "| critical | [CVE-2024-1234](https://example.com/cve/2024-1234) | openssl | 1.0.0 | container-1, container-2 |",
+    );
+  });
+
+  it("should escape pipe characters in uri", () => {
+    const vuln: AuditVuln = {
+      cve: {
+        name: "CVE-2024-1234",
+        uri: "https://example.com/cve|2024|1234",
+        severity: "high",
+        description: "Test",
+        package_name: "pkg",
+        package_version: "1.0.0",
+      },
+      containers: ["container"],
+    };
+    const row = renderRow(vuln);
+    expect(row).toContain(
+      "[CVE-2024-1234](https://example.com/cve%7C2024%7C1234)",
+    );
+  });
+
+  it("should escape pipe characters in CVE name", () => {
+    const vuln: AuditVuln = {
+      cve: {
+        name: "CVE|2024|1234",
+        uri: "https://example.com/cve",
+        severity: "high",
+        description: "Test",
+        package_name: "pkg",
+        package_version: "1.0.0",
+      },
+      containers: ["container"],
+    };
+    const row = renderRow(vuln);
+    expect(row).toContain("[CVE\\|2024\\|1234]");
+  });
+
+  it("should escape newlines in package name", () => {
+    const vuln: AuditVuln = {
+      cve: {
+        name: "CVE-2024-1234",
+        uri: "https://example.com/cve",
+        severity: "medium",
+        description: "Test",
+        package_name: "open\nssl",
+        package_version: "1.0.0",
+      },
+      containers: ["container"],
+    };
+    const row = renderRow(vuln);
+    expect(row).toContain("open ssl");
+  });
+
+  it("should handle single container", () => {
+    const vuln: AuditVuln = {
+      cve: {
+        name: "CVE-2024-1234",
+        uri: "https://example.com/cve",
+        severity: "low",
+        description: "Test",
+        package_name: "pkg",
+        package_version: "1.0.0",
+      },
+      containers: ["single-container"],
+    };
+    const row = renderRow(vuln);
+    expect(row).toContain("single-container |");
+  });
+
+  it("should handle multiple containers", () => {
+    const vuln: AuditVuln = {
+      cve: {
+        name: "CVE-2024-1234",
+        uri: "https://example.com/cve",
+        severity: "info",
+        description: "Test",
+        package_name: "pkg",
+        package_version: "1.0.0",
+      },
+      containers: ["app", "worker", "web"],
+    };
+    const row = renderRow(vuln);
+    expect(row).toContain("app, worker, web");
   });
 });

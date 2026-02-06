@@ -66,7 +66,7 @@ describe("audit", () => {
     vi.mocked(findIssueByTitle).mockResolvedValue(null);
     vi.mocked(ensureIssue).mockResolvedValue(mockUpdated as any);
 
-    await await audit({ args: mockArgs, params: mockParams });
+    await audit({ args: mockArgs, params: mockParams });
 
     expect(ensureLabel).toHaveBeenCalled();
     expect(ensureIssue).toHaveBeenCalled();
@@ -90,7 +90,7 @@ describe("audit", () => {
     await audit({ args: mockArgs, params: mockParams });
 
     expect(core.info).toHaveBeenCalledWith(
-      "Creating or updating issue: test-owner/test-repo#Security Audit",
+      "Creating or updating issue 'Security Audit' in test-owner/test-repo",
     );
   });
 });

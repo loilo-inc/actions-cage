@@ -1,4 +1,4 @@
-import { AuditResult } from "./types";
+import { AuditResult, AuditVuln } from "./types";
 
 function esc(text: string): string {
   return text.replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
@@ -39,15 +39,7 @@ export function renderAuditSummaryMarkdown(result: AuditResult): string {
     "| --- | --- | --- | --- | --- |",
   ];
 
-  const vulnsRows = result.vulns.map((v) => {
-    const sev = esc(v.cve.severity);
-    const uri = encodeURIComponent(v.cve.uri);
-    const cve = `[${esc(v.cve.name)}](${uri})`;
-    const pkg = esc(v.cve.package_name);
-    const ver = esc(v.cve.package_version);
-    const containers = esc(v.containers.join(", "));
-    return `| ${sev} | ${cve} | ${pkg} | ${ver} | ${containers} |`;
-  });
+  const vulnsRows = result.vulns.map(renderRow);
 
   const vulnsSection =
     result.vulns.length === 0
@@ -69,6 +61,16 @@ export function renderAuditSummaryMarkdown(result: AuditResult): string {
     `## Vulnerabilities (${result.summary.total_count})`,
     ...vulnsSection,
   ].join("\n");
+}
+
+export function renderRow(v: AuditVuln): string {
+  const sev = esc(v.cve.severity);
+  const uri = new URL(v.cve.uri).toString().replace(/\|/g, "%7C");
+  const cve = `[${esc(v.cve.name)}](${uri})`;
+  const pkg = esc(v.cve.package_name);
+  const ver = esc(v.cve.package_version);
+  const containers = esc(v.containers.join(", "));
+  return `| ${sev} | ${cve} | ${pkg} | ${ver} | ${containers} |`;
 }
 
 export function renderIssueBody(): string {

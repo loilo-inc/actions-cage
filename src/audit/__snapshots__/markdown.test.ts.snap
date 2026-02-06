@@ -36,7 +36,7 @@ exports[`buildCommentBody > renders markdown with vulnerabilities 1`] = `
 
 | Severity | CVE | Package | Version | Containers |
 | --- | --- | --- | --- | --- |
-| CRITICAL | [CVE-2026-0001](https%3A%2F%2Fnvd.nist.gov%2Fvuln%2Fdetail%2FCVE-2026-0001) | openssl | 3.0.0 | app |
-| HIGH | [CVE-2026-0002](https%3A%2F%2Fnvd.nist.gov%2Fvuln%2Fdetail%2FCVE-2026-0002) | libexpat | 2.7.1 | app, worker |
+| CRITICAL | [CVE-2026-0001](https://nvd.nist.gov/vuln/detail/CVE-2026-0001) | openssl | 3.0.0 | app |
+| HIGH | [CVE-2026-0002](https://nvd.nist.gov/vuln/detail/CVE-2026-0002) | libexpat | 2.7.1 | app, worker |
 </details>"
 `;
