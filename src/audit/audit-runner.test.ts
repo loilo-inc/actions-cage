@@ -30,6 +30,20 @@ describe("run", () => {
     );
   });
 
+  it("should throw error when GITHUB_REPOSITORY is invalid", async () => {
+    process.env.GITHUB_REPOSITORY = "invalid-repo-format";
+    vi.mocked(core.getInput).mockImplementation((key) => {
+      if (key === "region") return "us-east-1";
+      if (key === "github-token") return "token123";
+      if (key === "cluster") return "my-cluster";
+      if (key === "service") return "my-service";
+      return "";
+    });
+    await expect(run()).rejects.toThrow(
+      "GITHUB_REPOSITORY is not set or invalid: invalid-repo-format",
+    );
+  });
+
   it("should execute audit with audit-context", async () => {
     vi.mocked(core.getInput).mockImplementation((key) => {
       if (key === "region") return "us-east-1";

@@ -100,10 +100,6 @@ describe("audit", () => {
     expect(mockOctokit.rest.issues.createComment).toHaveBeenCalledWith(
       expect.objectContaining({ owner: "o", repo: "r", issue_number: 12 }),
     );
-    expect(mockOctokit.request).toHaveBeenCalledWith(
-      "PUT /repos/{owner}/{repo}/issues/{issue_number}/pin",
-      expect.objectContaining({ owner: "o", repo: "r", issue_number: 12 }),
-    );
   });
 
   it("creates new issue when existing is closed", async () => {

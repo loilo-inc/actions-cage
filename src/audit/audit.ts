@@ -124,22 +124,6 @@ export async function ensureIssue(github: Github, params: AuditIssueParams) {
   return created.data;
 }
 
-async function pinIssue(
-  github: Github,
-  owner: string,
-  repo: string,
-  issueNumber: number,
-) {
-  await github.request("PUT /repos/{owner}/{repo}/issues/{issue_number}/pin", {
-    owner,
-    repo,
-    issue_number: issueNumber,
-    headers: {
-      accept: "application/vnd.github+json",
-    },
-  });
-}
-
 export async function findIssueComment({
   issueNumber,
   github,
@@ -245,6 +229,4 @@ export async function audit({
     result,
   });
   core.info(`Comment added: #${updated.number}`);
-  await pinIssue(github, issue.owner, issue.repo, updated.number);
-  core.info(`Issue pinned: #${updated.number}`);
 }
