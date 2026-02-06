@@ -112,7 +112,7 @@ export async function findIssueByTitle({
     const issuesResp = await github.rest.issues.listForRepo({
       owner,
       repo,
-      state: "all",
+      state: "open",
       per_page: perPage,
       page,
       labels: "canarycage",
@@ -164,9 +164,6 @@ export async function ensureIssue(github: Github, params: AuditIssueParams) {
   const { owner, repo, title } = params;
   const existing = await findIssueByTitle({ github, owner, repo, title });
   if (existing) {
-    if (existing.state !== "open") {
-      throw new Error(`Issue ${owner}/${repo}#${existing.number} is not open.`);
-    }
     const hasCanaryCageLabel = existing.labels
       .map((l) => (typeof l === "string" ? l : l.name))
       .some((v) => v === "canarycage");

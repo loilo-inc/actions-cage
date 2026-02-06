@@ -106,6 +106,23 @@ describe("audit", () => {
     );
   });
 
+  it("creates new issue when existing is closed", async () => {
+    mockOctokit.rest.issues.listForRepo.mockResolvedValue({
+      data: [],
+    });
+    await audit({
+      args: ["--region", "us-west-2", "ctx"],
+      issue: { owner: "o", repo: "r", token: "t", title: "t" },
+    });
+
+    expect(mockOctokit.rest.issues.create).toHaveBeenCalledWith(
+      expect.objectContaining({ labels: ["canarycage"] }),
+    );
+    expect(mockOctokit.rest.issues.createComment).toHaveBeenCalledWith(
+      expect.objectContaining({ owner: "o", repo: "r", issue_number: 12 }),
+    );
+  });
+
   it("updates existing service comment", async () => {
     const existingIssue = {
       number: 12,
@@ -135,26 +152,6 @@ describe("audit", () => {
       expect.objectContaining({ comment_id: 99 }),
     );
     expect(mockOctokit.rest.issues.createComment).not.toHaveBeenCalled();
-  });
-
-  it("fails when existing issue is closed", async () => {
-    const existingIssue = {
-      number: 12,
-      title: "t",
-      state: "closed",
-      labels: ["canarycage"],
-      html_url: "https://example.com/issues/12",
-    };
-    mockOctokit.rest.issues.listForRepo.mockResolvedValue({
-      data: [existingIssue],
-    });
-
-    await expect(
-      audit({
-        args: ["--region", "us-west-2", "ctx"],
-        issue: { owner: "o", repo: "r", token: "t", title: "t" },
-      }),
-    ).rejects.toThrow("is not open");
   });
 
   it("fails when existing issue lacks canarycage label", async () => {
@@ -494,7 +491,7 @@ describe("findIssueByTitle", () => {
     expect(mockOctokit.rest.issues.listForRepo).toHaveBeenNthCalledWith(2, {
       owner: "o",
       repo: "r",
-      state: "all",
+      state: "open",
       per_page: 100,
       page: 2,
       labels: "canarycage",
