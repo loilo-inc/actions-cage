@@ -1,4 +1,4 @@
-import { AuditResult, AuditVuln } from "./types";
+import { AuditResult, AuditVuln, sortVulnsBySeverity } from "./types";
 
 export function esc(text: string): string {
   return text.replace(/\|/g, "\\|").replace(/\r?\n/g, " ").replace(/`/g, "\\`");
@@ -39,7 +39,7 @@ export function renderAuditSummaryMarkdown(result: AuditResult): string {
     "| --- | --- | --- | --- | --- |",
   ];
 
-  const vulnsRows = result.vulns.map(renderRow);
+  const vulnsRows = result.vulns.sort(sortVulnsBySeverity).map(renderRow);
 
   const vulnsSection =
     result.vulns.length === 0
