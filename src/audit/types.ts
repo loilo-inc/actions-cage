@@ -35,3 +35,13 @@ export type AuditIssueParams = {
   token: string;
   title: string;
 };
+
+const sevOrder = ["critical", "high", "medium", "low", "info"];
+export function sortVulnsBySeverity(a: AuditVuln, b: AuditVuln): number {
+  const sevA = sevOrder.indexOf(a.cve.severity.toLowerCase());
+  const sevB = sevOrder.indexOf(b.cve.severity.toLowerCase());
+  if (sevA !== sevB) {
+    return sevA - sevB;
+  }
+  return a.cve.name.localeCompare(b.cve.name);
+}

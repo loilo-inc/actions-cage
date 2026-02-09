@@ -123,6 +123,65 @@ describe("renderAuditSummaryMarkdown", () => {
     expect(md).toContain("[CVE-2024-1234](https://example.com/cve)");
     expect(md).toContain("container-1, container-2");
   });
+
+  it("should sort vulnerabilities by severity", () => {
+    const result: AuditResult = {
+      region: "us-east",
+      cluster: "prod",
+      service: "api",
+      scanned_at: "2024-01-01",
+      summary: {
+        highest_severity: "critical",
+        critical_count: 1,
+        high_count: 2,
+        medium_count: 0,
+        low_count: 0,
+        info_count: 0,
+        total_count: 3,
+      },
+      vulns: [
+        {
+          cve: {
+            name: "CVE-LOW",
+            uri: "https://example.com/low",
+            severity: "low",
+            description: "Low",
+            package_name: "pkg1",
+            package_version: "1.0.0",
+          },
+          containers: ["c1"],
+        },
+        {
+          cve: {
+            name: "CVE-CRITICAL",
+            uri: "https://example.com/critical",
+            severity: "critical",
+            description: "Critical",
+            package_name: "pkg2",
+            package_version: "1.0.0",
+          },
+          containers: ["c2"],
+        },
+        {
+          cve: {
+            name: "CVE-HIGH",
+            uri: "https://example.com/high",
+            severity: "high",
+            description: "High",
+            package_name: "pkg3",
+            package_version: "1.0.0",
+          },
+          containers: ["c3"],
+        },
+      ],
+    };
+    const md = renderAuditSummaryMarkdown(result);
+    const criticalIndex = md.indexOf("CVE-CRITICAL");
+    const highIndex = md.indexOf("CVE-HIGH");
+    const lowIndex = md.indexOf("CVE-LOW");
+    expect(criticalIndex).toBeLessThan(highIndex);
+    expect(highIndex).toBeLessThan(lowIndex);
+  });
 });
 
 describe("renderIssueBody", () => {
