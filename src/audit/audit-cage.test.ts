@@ -24,9 +24,9 @@ describe("executeAudit", () => {
 
     expect(exec.getExecOutput).toHaveBeenCalledWith("cage", [
       "audit",
+      "--json",
       "--severity",
       "high",
-      "--json",
     ]);
   });
 
