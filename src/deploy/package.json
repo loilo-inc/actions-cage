@@ -1,0 +1,17 @@
+{
+  "name": "@loilo-inc/actions-deploy-cage",
+  "version": "0.0.0",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/deploy-runner.js",
+  "types": "./dist/deploy-runner.d.ts",
+  "files": ["dist"],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
+  "dependencies": {
+    "@actions/core": "^2",
+    "@actions/exec": "^1",
+    "@actions/github": "^9"
+  }
+}

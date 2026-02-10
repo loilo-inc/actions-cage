@@ -1,9 +1,9 @@
 import * as core from "@actions/core";
-import { parseStringToArgs } from "../util/args";
-import { assertInput, boolify } from "../util/gha";
 import { audit } from "./audit";
 import { executeAudit } from "./audit-cage";
 import { renderAuditSummaryMarkdown } from "./markdown";
+import { parseStringToArgs } from "./util/args";
+import { assertInput, boolify } from "./util/gha";
 
 export async function run() {
   const region = assertInput("region");

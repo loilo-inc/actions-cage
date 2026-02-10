@@ -1,4 +1,4 @@
 dist:
-	npx tsc
+	npx tsc -b
 clean:
 	rm -rf dist/

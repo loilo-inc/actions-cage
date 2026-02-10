@@ -1,27 +1,29 @@
 {
-  "name": "@loilo-inc/actions-cage",
+  "name": "actions-cage",
+  "private": true,
   "license": "MIT",
   "type": "module",
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com/"
-  },
-  "types": "./dist/index.d.ts",
-  "main": "./dist/index.js",
+  "workspaces": ["src/setup", "src/deploy", "src/audit"],
   "scripts": {
     "fmt": "prettier --write '**/*.ts'",
     "fmtcheck": "prettier --check '**/*.ts'",
     "test": "vitest run",
-    "build": "tsc",
-    "testci": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=json --coverage.reportsDirectory=coverage"
+    "build": "tsc -b",
+    "testci": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=json --coverage.reportsDirectory=coverage",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "changeset publish"
   },
   "dependencies": {
     "@actions/core": "^2",
+    "@actions/exec": "^1",
     "@actions/github": "^9",
     "@actions/io": "^2",
     "@actions/tool-cache": "^3",
     "semver": "^7.6.2"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.27.0",
     "@types/node": "^24",
     "@types/semver": "^7.5.8",
     "@vitest/coverage-v8": "^4.0.18",
