@@ -14,7 +14,7 @@ export async function dispatchRepos({
   fetchImpl = fetch,
 } = {}) {
   const payloadBase = {
-    event_type: "release",
+    event_type: "actions-cage-release",
     client_payload: {
       source: "actions-cage",
     },
