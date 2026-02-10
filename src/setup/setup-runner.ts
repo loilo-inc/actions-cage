@@ -1,6 +1,6 @@
 import * as core from "@actions/core";
 import * as io from "@actions/io";
-import { assertInput } from "@loilo-inc/actions-util-cage";
+import { assertInput } from "@loilo-inc/actions-cage";
 import { downloadCage } from "./download";
 import { fetchReleases } from "./github";
 import { getPlatform } from "./type";

@@ -1,11 +1,13 @@
 {
-  "name": "@loilo-inc/actions-util-cage",
+  "name": "@loilo-inc/actions-cage",
   "version": "0.0.0",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"
   },

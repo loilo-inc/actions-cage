@@ -3,7 +3,7 @@ import {
   assertInput,
   boolify,
   parseStringToArgs,
-} from "@loilo-inc/actions-util-cage";
+} from "@loilo-inc/actions-cage";
 import {
   aggregateDeploymentParams,
   deploy,

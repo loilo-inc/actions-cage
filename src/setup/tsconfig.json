@@ -8,5 +8,5 @@
   },
   "references": [{ "path": "../util" }],
   "include": ["**/*.ts"],
-  "exclude": ["**/*.test.ts", "**/testdata/**"]
+  "exclude": ["dist", "**/*.test.ts", "**/testdata/**"]
 }

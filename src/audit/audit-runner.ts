@@ -1,12 +1,12 @@
 import * as core from "@actions/core";
-import { audit } from "./audit";
-import { executeAudit } from "./audit-cage";
-import { renderAuditSummaryMarkdown } from "./markdown";
 import {
   assertInput,
   boolify,
   parseStringToArgs,
-} from "@loilo-inc/actions-util-cage";
+} from "@loilo-inc/actions-cage";
+import { audit } from "./audit";
+import { executeAudit } from "./audit-cage";
+import { renderAuditSummaryMarkdown } from "./markdown";
 
 export async function run() {
   const region = assertInput("region");

@@ -5,7 +5,9 @@
   "type": "module",
   "main": "./dist/audit-runner.js",
   "types": "./dist/audit-runner.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"
   },
@@ -13,6 +15,6 @@
     "@actions/core": "^2",
     "@actions/exec": "^1",
     "@actions/github": "^9",
-    "@loilo-inc/actions-util-cage": "0.0.0"
+    "@loilo-inc/actions-cage": "^0"
   }
 }
