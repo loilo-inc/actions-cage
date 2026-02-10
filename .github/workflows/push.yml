@@ -13,7 +13,7 @@ jobs:
           node-version: "24"
       - run: npm ci
       - run: npm run fmtcheck
-      - run: npm run build --workspaces
+      - run: npm run build
       - run: npm run testci
       - uses: codecov/codecov-action@v5
         env:
