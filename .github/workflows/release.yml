@@ -19,6 +19,7 @@ jobs:
         with:
           node-version: "24"
           registry-url: "https://npm.pkg.github.com/"
+          scope: "@loilo-inc"
       - run: npm ci
       - run: npm run build
       - uses: changesets/action@v1
@@ -34,23 +35,4 @@ jobs:
         env:
           DISPATCH_TOKEN: ${{ secrets.REPO_DISPATCH_TOKEN }}
           RELEASE_TAG: ${{ github.ref_name }}
-        run: |
-          if [ -z "$DISPATCH_TOKEN" ]; then
-            echo "REPO_DISPATCH_TOKEN is not set."
-            exit 1
-          fi
-
-          repos=(
-            "loilo-inc/actions-setup-cage"
-            "loilo-inc/actions-deploy-cage"
-            "loilo-inc/actions-audit-cage"
-          )
-
-          for repo in "${repos[@]}"; do
-            echo "Dispatching $repo with tag $RELEASE_TAG"
-            curl -sSf -X POST \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer $DISPATCH_TOKEN" \
-              "https://api.github.com/repos/$repo/dispatches" \
-              -d "{\"event_type\":\"release\",\"client_payload\":{\"tag\":\"$RELEASE_TAG\",\"source\":\"actions-cage\"}}"
-          done
+        run: node tools/dispatch-downstream.mjs
