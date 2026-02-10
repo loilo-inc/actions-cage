@@ -1,6 +1,9 @@
 import * as core from "@actions/core";
-import { parseStringToArgs } from "./util/args";
-import { assertInput, boolify } from "./util/gha";
+import {
+  assertInput,
+  boolify,
+  parseStringToArgs,
+} from "@loilo-inc/actions-util-cage";
 import {
   aggregateDeploymentParams,
   deploy,

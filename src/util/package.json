@@ -1,0 +1,15 @@
+{
+  "name": "@loilo-inc/actions-util-cage",
+  "version": "0.0.0",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
+  "dependencies": {
+    "@actions/core": "^2"
+  }
+}

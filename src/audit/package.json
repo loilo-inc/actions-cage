@@ -12,6 +12,7 @@
   "dependencies": {
     "@actions/core": "^2",
     "@actions/exec": "^1",
-    "@actions/github": "^9"
+    "@actions/github": "^9",
+    "@loilo-inc/actions-util-cage": "workspace:*"
   }
 }

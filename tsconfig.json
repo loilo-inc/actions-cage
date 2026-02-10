@@ -1,6 +1,7 @@
 {
   "files": [],
   "references": [
+    { "path": "./src/util" },
     { "path": "./src/setup" },
     { "path": "./src/deploy" },
     { "path": "./src/audit" }

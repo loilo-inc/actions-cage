@@ -3,7 +3,7 @@
   "private": true,
   "license": "MIT",
   "type": "module",
-  "workspaces": ["src/setup", "src/deploy", "src/audit"],
+  "workspaces": ["src/setup", "src/deploy", "src/audit", "src/util"],
   "scripts": {
     "fmt": "prettier --write '**/*.ts'",
     "fmtcheck": "prettier --check '**/*.ts'",

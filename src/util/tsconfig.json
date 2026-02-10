@@ -6,7 +6,6 @@
     "composite": true,
     "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo"
   },
-  "references": [{ "path": "../util" }],
   "include": ["**/*.ts"],
   "exclude": ["**/*.test.ts", "**/testdata/**"]
 }
