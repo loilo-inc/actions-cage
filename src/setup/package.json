@@ -1,0 +1,22 @@
+{
+  "name": "@loilo-inc/actions-setup-cage",
+  "version": "0.0.0",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/setup-runner.js",
+  "types": "./dist/setup-runner.d.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
+  "dependencies": {
+    "@actions/core": "^2",
+    "@actions/github": "^9",
+    "@actions/io": "^2",
+    "@actions/tool-cache": "^3",
+    "@loilo-inc/actions-cage": "^0",
+    "semver": "^7.6.2"
+  }
+}
