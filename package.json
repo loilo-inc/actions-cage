@@ -12,6 +12,7 @@
     "testci": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=json --coverage.reportsDirectory=coverage",
     "changeset": "changeset",
     "version-packages": "changeset version",
+    "version-release": "changeset version && node tools/release.mjs",
     "release": "changeset publish"
   },
   "dependencies": {
