@@ -1,0 +1,20 @@
+name: Prepare Release
+on:
+  workflow_dispatch: {}
+jobs:
+  prepare-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          registry-url: "https://npm.pkg.github.com/"
+          scope: "@loilo-inc"
+      - run: npm ci
+      - uses: changesets/action@v1
+        with:
+          version: npm run version-packages

@@ -1,59 +1,11 @@
-import fs from "node:fs/promises";
-import path from "node:path";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 
-const packageToRepo = new Map([
-  ["@loilo-inc/actions-setup-cage", "loilo-inc/actions-setup-cage"],
-  ["@loilo-inc/actions-deploy-cage", "loilo-inc/actions-deploy-cage"],
-  ["@loilo-inc/actions-audit-cage", "loilo-inc/actions-audit-cage"],
-]);
-
-export async function collectChangedRepos({
-  repoRoot = process.cwd(),
-  changesetDir = path.join(repoRoot, ".changeset"),
-  packageMap = packageToRepo,
-  logMissingDir = true,
-} = {}) {
-  let changesetFiles = [];
-  try {
-    const entries = await fs.readdir(changesetDir, { withFileTypes: true });
-    changesetFiles = entries
-      .filter((entry) => entry.isFile() && entry.name.endsWith(".md"))
-      .filter((entry) => entry.name !== "README.md")
-      .map((entry) => path.join(changesetDir, entry.name));
-  } catch {
-    if (logMissingDir) {
-      console.log("No .changeset directory found. Skipping downstream dispatch.");
-    }
-    return { repos: [], missingChangesetDir: true };
-  }
-
-  const affectedPackages = new Set();
-  for (const file of changesetFiles) {
-    const content = await fs.readFile(file, "utf8");
-    const match = content.match(/^---\s*\n([\s\S]*?)\n---\s*\n/);
-    if (!match) continue;
-
-    const frontmatter = match[1];
-    for (const rawLine of frontmatter.split("\n")) {
-      const line = rawLine.trim();
-      if (!line || line.startsWith("#")) continue;
-      const entryMatch = line.match(
-        /^"?([^"\s]+)"?\s*:\s*(major|minor|patch)\s*$/
-      );
-      if (entryMatch) affectedPackages.add(entryMatch[1]);
-    }
-  }
-
-  const repos = [
-    ...new Set(
-      [...affectedPackages].map((pkg) => packageMap.get(pkg)).filter(Boolean)
-    ),
-  ];
-
-  return { repos, missingChangesetDir: false };
-}
+const repos = [
+  "loilo-inc/actions-setup-cage",
+  "loilo-inc/actions-deploy-cage",
+  "loilo-inc/actions-audit-cage",
+];
 
 export async function dispatchRepos({
   repos,
@@ -61,8 +13,22 @@ export async function dispatchRepos({
   dispatchToken,
   fetchImpl = fetch,
 } = {}) {
+  const payloadBase = {
+    event_type: "actions-cage-release",
+    client_payload: {
+      source: "actions-cage",
+    },
+  };
+  if (releaseTag) {
+    payloadBase.client_payload.tag = releaseTag;
+  }
+
   for (const repo of repos) {
-    console.log(`Dispatching ${repo} with tag ${releaseTag}`);
+    console.log(
+      releaseTag
+        ? `Dispatching ${repo} with tag ${releaseTag}`
+        : `Dispatching ${repo}`
+    );
 
     const response = await fetchImpl(
       `https://api.github.com/repos/${repo}/dispatches`,
@@ -72,13 +38,7 @@ export async function dispatchRepos({
           Accept: "application/vnd.github+json",
           Authorization: `Bearer ${dispatchToken}`,
         },
-        body: JSON.stringify({
-          event_type: "release",
-          client_payload: {
-            tag: releaseTag,
-            source: "actions-cage",
-          },
-        }),
+        body: JSON.stringify(payloadBase),
       }
     );
 
@@ -99,7 +59,6 @@ export async function dispatchRepos({
 
 export async function main({
   env = process.env,
-  repoRoot = process.cwd(),
   fetchImpl = fetch,
 } = {}) {
   const dispatchToken = env.DISPATCH_TOKEN || "";
@@ -110,21 +69,10 @@ export async function main({
     return 1;
   }
 
-  if (!releaseTag) {
-    console.error("RELEASE_TAG is not set.");
-    return 1;
-  }
-
-  const { repos, missingChangesetDir } = await collectChangedRepos({ repoRoot });
-  if (missingChangesetDir) return 0;
-
-  if (repos.length === 0) {
-    console.log("No downstream packages changed. Skipping dispatch.");
-    return 0;
-  }
+  const uniqueRepos = [...new Set(repos)];
 
   const result = await dispatchRepos({
-    repos,
+    repos: uniqueRepos,
     releaseTag,
     dispatchToken,
     fetchImpl,

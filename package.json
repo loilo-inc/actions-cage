@@ -3,7 +3,12 @@
   "private": true,
   "license": "MIT",
   "type": "module",
-  "workspaces": ["src/setup", "src/deploy", "src/audit", "src/util"],
+  "workspaces": [
+    "src/setup",
+    "src/deploy",
+    "src/audit",
+    "src/util"
+  ],
   "scripts": {
     "fmt": "prettier --write '**/*.ts'",
     "fmtcheck": "prettier --check '**/*.ts'",
@@ -12,7 +17,6 @@
     "testci": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=json --coverage.reportsDirectory=coverage",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "version-release": "changeset version && node tools/release.mjs",
     "release": "changeset publish"
   },
   "dependencies": {
