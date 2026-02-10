@@ -1,0 +1,19 @@
+name: Dispatch Downstream Actions
+description: Dispatch repository events to downstream action repositories after a release.
+inputs:
+  dispatch-token:
+    description: Token with access to dispatch downstream repositories.
+    required: true
+  published-packages:
+    description: JSON array of published packages from changesets.
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Dispatch downstream action releases
+      shell: bash
+      env:
+        DISPATCH_TOKEN: ${{ inputs.dispatch-token }}
+        PUBLISHED_PACKAGES: ${{ inputs.published-packages }}
+      run: npx tsx tools/dispatch-downstream.ts
+

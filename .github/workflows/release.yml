@@ -16,6 +16,7 @@ jobs:
           scope: "@loilo-inc"
       - run: npm ci
       - uses: changesets/action@v1
+        id: release
         with:
           publish: npm run release
         env:
@@ -23,6 +24,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Dispatch downstream action releases
         if: ${{ success() }}
-        env:
-          DISPATCH_TOKEN: ${{ secrets.REPO_DISPATCH_TOKEN }}
-        run: node tools/dispatch-downstream.mjs
+        uses: ./.github/actions/dispatch-downstream
+        with:
+          dispatch-token: ${{ secrets.REPO_DISPATCH_TOKEN }}
+          published-packages: ${{ steps.release.outputs.publishedPackages }}
