@@ -11,6 +11,8 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
+          registry-url: "https://npm.pkg.github.com/"
+          scope: "@loilo-inc"
       - run: npm ci
       - run: npm run fmtcheck
       - run: npm run build
@@ -21,3 +23,10 @@ jobs:
         with:
           fail_ci_if_error: true
           files: coverage/coverage-final.json
+      - uses: changesets/action@v1
+        if: github.event.ref == 'refs/heads/main'
+        with:
+          publish: npm run release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
