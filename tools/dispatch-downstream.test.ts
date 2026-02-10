@@ -30,7 +30,7 @@ describe("collectChangedRepos", () => {
     await writeChangeset(
       tempDir!,
       "one.md",
-      `---\n"@loilo-inc/actions-setup-cage": patch\n"@loilo-inc/actions-deploy-cage": minor\n---\n\n- change\n`
+      `---\n"@loilo-inc/actions-setup-cage": patch\n"@loilo-inc/actions-deploy-cage": minor\n---\n\n- change\n`,
     );
 
     const result = await collectChangedRepos({
@@ -49,12 +49,12 @@ describe("collectChangedRepos", () => {
     await writeChangeset(
       tempDir!,
       "one.md",
-      `---\n"@loilo-inc/actions-setup-cage": patch\n"@loilo-inc/actions-setup-cage": minor\n"@loilo-inc/unknown": patch\n---\n`
+      `---\n"@loilo-inc/actions-setup-cage": patch\n"@loilo-inc/actions-setup-cage": minor\n"@loilo-inc/unknown": patch\n---\n`,
     );
     await writeChangeset(
       tempDir!,
       "two.md",
-      `---\n"@loilo-inc/actions-setup-cage": patch\n---\n`
+      `---\n"@loilo-inc/actions-setup-cage": patch\n---\n`,
     );
 
     const result = await collectChangedRepos({
