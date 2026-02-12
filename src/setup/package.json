@@ -6,7 +6,8 @@
   "main": "./dist/setup-runner.js",
   "types": "./dist/setup-runner.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "action.yml"
   ],
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"

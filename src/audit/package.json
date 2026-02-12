@@ -6,7 +6,8 @@
   "main": "./dist/audit-runner.js",
   "types": "./dist/audit-runner.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "action.yml"
   ],
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"

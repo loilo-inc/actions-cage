@@ -1,0 +1,31 @@
+name: Cage Audit Action
+description: Run cage audit and open/update a GitHub issue with the results.
+inputs:
+  region:
+    description: AWS region to scan.
+    required: true
+  github-token:
+    description: GitHub token used to create/update the issue.
+    required: true
+  cluster:
+    description: ECS cluster name. Required when audit-context is not set.
+    required: false
+  service:
+    description: Service name. Required when audit-context is not set.
+    required: false
+  audit-context:
+    description: Path or identifier for audit context. If set, cluster/service are optional.
+    required: false
+  cage-options:
+    description: Extra options passed to `cage audit`.
+    required: false
+  issue-title:
+    description: Custom issue title. Defaults to "Cage audit report (<region>/<cluster>/<service>)".
+    required: false
+  dry-run:
+    description: If true, do not create/update the issue; only log the summary.
+    required: false
+    default: "false"
+runs:
+  using: node24
+  main: lib/index.js

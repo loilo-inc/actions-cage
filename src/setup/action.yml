@@ -1,0 +1,16 @@
+name: "Setup Canarycage"
+description: "Download and add cage to the PATH"
+author: "LoiLo"
+inputs:
+  github-token:
+    description: "Use secrets.GITHUB_TOKEN."
+    required: true
+  cage-version:
+    description: "Canarycage version. If no version specified, the latest version will be used automatically."
+    required: false
+  use-pre:
+    description: "Whether to use the latest pre-release (RC) version."
+    required: false
+runs:
+  using: "node24"
+  main: "lib/index.js"
