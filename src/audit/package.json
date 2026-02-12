@@ -1,6 +1,6 @@
 {
   "name": "@loilo-inc/actions-audit-cage",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "license": "MIT",
   "type": "module",
   "main": "./dist/audit-runner.js",
