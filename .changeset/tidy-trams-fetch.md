@@ -1,5 +1,5 @@
 ---
-"@loilo-inc/actions-audit-cage": minor
+"@loilo-inc/actions-audit-cage": patch
 ---
 
 test
