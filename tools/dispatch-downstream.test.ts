@@ -20,21 +20,21 @@ describe("main", () => {
     vi.clearAllMocks();
   });
 
-  it("returns 1 when dispatch-token is not set", async () => {
+  it("returns 1 when github-token is not set", async () => {
     vi.mocked(core.getInput).mockReturnValue("");
-    const result = await main({ env: { DISPATCH_TOKEN: "" } });
+    const result = await main({ env: { GITHUB_TOKEN: "" } });
     expect(result).toBe(1);
     expect(vi.mocked(core.setFailed)).toHaveBeenCalledWith(
-      "dispatch-token is not set.",
+      "github-token is not set.",
     );
   });
 
   it("returns 1 when published-packages is not set", async () => {
     vi.mocked(core.getInput).mockImplementation((name: string) => {
-      if (name === "dispatch-token") return "token123";
+      if (name === "github-token") return "token123";
       return "";
     });
-    const result = await main({ env: { DISPATCH_TOKEN: "" } });
+    const result = await main({ env: { GITHUB_TOKEN: "" } });
     expect(result).toBe(1);
     expect(vi.mocked(core.setFailed)).toHaveBeenCalledWith(
       "published-packages is not set.",
@@ -43,7 +43,7 @@ describe("main", () => {
 
   it("returns 0 on successful dispatch", async () => {
     vi.mocked(core.getInput).mockImplementation((name: string) => {
-      if (name === "dispatch-token") return "token123";
+      if (name === "github-token") return "token123";
       if (name === "published-packages")
         return JSON.stringify([
           { name: "@loilo-inc/actions-setup-cage", version: "1.0.0" },
@@ -58,7 +58,7 @@ describe("main", () => {
 
   it("returns 1 when dispatch fails", async () => {
     vi.mocked(core.getInput).mockImplementation((name: string) => {
-      if (name === "dispatch-token") return "token123";
+      if (name === "github-token") return "token123";
       if (name === "published-packages")
         return JSON.stringify([
           { name: "@loilo-inc/actions-setup-cage", version: "1.0.0" },
@@ -80,7 +80,7 @@ describe("main", () => {
 
   it("throws error for unknown package name", async () => {
     vi.mocked(core.getInput).mockImplementation((name: string) => {
-      if (name === "dispatch-token") return "token123";
+      if (name === "github-token") return "token123";
       if (name === "published-packages")
         return JSON.stringify([{ name: "@unknown/package", version: "1.0.0" }]);
       return "";

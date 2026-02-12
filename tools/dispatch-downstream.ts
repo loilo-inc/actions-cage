@@ -18,11 +18,11 @@ interface DispatchResult {
 
 export async function dispatchRepos({
   repo,
-  dispatchToken,
+  githubToken,
   version,
 }: {
   repo: string;
-  dispatchToken: string;
+  githubToken: string;
   version: string;
 }): Promise<DispatchResult> {
   const payloadBase: Record<string, unknown> = {
@@ -37,7 +37,7 @@ export async function dispatchRepos({
       method: "POST",
       headers: {
         Accept: "application/vnd.github+json",
-        Authorization: `Bearer ${dispatchToken}`,
+        Authorization: `Bearer ${githubToken}`,
       },
       body: JSON.stringify(payloadBase),
     },
@@ -63,13 +63,12 @@ export async function main({
 }: {
   env?: NodeJS.ProcessEnv;
 } = {}): Promise<number> {
-  const dispatchToken =
-    core.getInput("dispatch-token") || env.DISPATCH_TOKEN || "";
+  const githubToken = core.getInput("github-token") || env.GITHUB_TOKEN || "";
   const publishedPackages =
     core.getInput("published-packages") || env.PUBLISHED_PACKAGES || "";
 
-  if (!dispatchToken) {
-    core.setFailed("dispatch-token is not set.");
+  if (!githubToken) {
+    core.setFailed("github-token is not set.");
     return 1;
   }
   if (!publishedPackages) {
@@ -87,7 +86,7 @@ export async function main({
   for (const { repo, pkg } of releases) {
     const result = await dispatchRepos({
       repo,
-      dispatchToken,
+      githubToken,
       version: pkg.version,
     });
     if (!result.ok) {
