@@ -1,7 +1,7 @@
 name: Dispatch Downstream Actions
 description: Dispatch repository events to downstream action repositories after a release.
 inputs:
-  dispatch-token:
+  github-token:
     description: Token with access to dispatch downstream repositories.
     required: true
   published-packages:
@@ -13,7 +13,7 @@ runs:
     - name: Dispatch downstream action releases
       shell: bash
       env:
-        DISPATCH_TOKEN: ${{ inputs.dispatch-token }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
         PUBLISHED_PACKAGES: ${{ inputs.published-packages }}
       run: npx tsx tools/dispatch-downstream.ts
 
