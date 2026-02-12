@@ -19,7 +19,6 @@ export async function findIssueByTitle({
   repo: string;
   title: string;
 }) {
-  const me = await github.rest.users.getAuthenticated();
   const perPage = 100;
   let page = 1;
   // Paginate through all matching issues to ensure we don't miss any beyond the first page.
@@ -33,7 +32,6 @@ export async function findIssueByTitle({
       per_page: perPage,
       page,
       labels: "canarycage",
-      creator: me.data.login,
     });
     const issues = issuesResp.data;
     const match = issues.find(

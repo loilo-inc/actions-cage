@@ -21,9 +21,6 @@ const resolve = (path: string) =>
 const makeMockOctokit = () => {
   return {
     rest: {
-      users: {
-        getAuthenticated: vi.fn(),
-      },
       issues: {
         listForRepo: vi.fn(),
         update: vi.fn(),
@@ -120,9 +117,6 @@ describe("ensureIssue", () => {
       labels: ["canarycage"],
       html_url: "https://example.com/issues/42",
     };
-    mockOctokit.rest.users.getAuthenticated.mockResolvedValue({
-      data: { login: "bot" },
-    });
     mockOctokit.rest.issues.listForRepo.mockResolvedValue({
       data: [existingIssue],
     });
@@ -143,9 +137,6 @@ describe("ensureIssue", () => {
       labels: ["canarycage"],
       html_url: "https://example.com/issues/99",
     };
-    mockOctokit.rest.users.getAuthenticated.mockResolvedValue({
-      data: { login: "bot" },
-    });
     mockOctokit.rest.issues.listForRepo.mockResolvedValue({ data: [] });
     mockOctokit.rest.issues.create.mockResolvedValue({ data: createdIssue });
 
@@ -173,9 +164,6 @@ describe("ensureIssue", () => {
       labels: [{ name: "canarycage" }],
       html_url: "https://example.com/issues/42",
     };
-    mockOctokit.rest.users.getAuthenticated.mockResolvedValue({
-      data: { login: "bot" },
-    });
     mockOctokit.rest.issues.listForRepo.mockResolvedValue({
       data: [existingIssue],
     });
@@ -196,9 +184,6 @@ describe("ensureIssue", () => {
       labels: ["other-label"],
       html_url: "https://example.com/issues/42",
     };
-    mockOctokit.rest.users.getAuthenticated.mockResolvedValue({
-      data: { login: "bot" },
-    });
     mockOctokit.rest.issues.listForRepo.mockResolvedValue({
       data: [existingIssue],
     });
@@ -218,9 +203,6 @@ describe("findIssueByTitle", () => {
     vi.clearAllMocks();
     mockOctokit = makeMockOctokit();
     vi.mocked(github.getOctokit).mockReturnValue(mockOctokit as any);
-    mockOctokit.rest.users.getAuthenticated.mockResolvedValue({
-      data: { login: "bot" },
-    });
   });
 
   it("returns issue when found on first page", async () => {
@@ -320,7 +302,6 @@ describe("findIssueByTitle", () => {
       per_page: 100,
       page: 2,
       labels: "canarycage",
-      creator: "bot",
     });
   });
 
