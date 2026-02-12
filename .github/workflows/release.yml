@@ -1,6 +1,8 @@
 name: Release
 on:
-  workflow_dispatch: {}
+  push:
+    tags:
+      - "[0-9]*.[0-9]*.[0-9]*"
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -15,16 +17,23 @@ jobs:
           registry-url: "https://npm.pkg.github.com/"
           scope: "@loilo-inc"
       - run: npm ci
+      - name: Generate Token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.LOILO_CI_PUBLIC_REPOSITORY_APP_ID }}
+          private-key: ${{ secrets.LOILO_CI_PUBLIC_REPOSITORY_APP_PRIVATE_KEY }}
       - uses: changesets/action@v1
         id: release
         with:
+          version: npm run version-packages
           publish: npm run release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Dispatch downstream action releases
         if: ${{ success() }}
         uses: ./.github/actions/dispatch-downstream
         with:
-          dispatch-token: ${{ secrets.REPO_DISPATCH_TOKEN }}
+          dispatch-token: ${{ steps.generate-token.outputs.token }}
           published-packages: ${{ steps.release.outputs.publishedPackages }}
