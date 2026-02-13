@@ -7,17 +7,14 @@ inputs:
   github-token:
     description: GitHub token used to create/update the issue.
     required: true
-  cluster:
-    description: ECS cluster name. Required when audit-context is not set.
+  audit-contexts:
+    description: Newline-separated JSON file(s) containing audit context (cluster, service).
     required: false
-  service:
-    description: Service name. Required when audit-context is not set.
-    required: false
-  audit-context:
-    description: Path or identifier for audit context. If set, cluster/service are optional.
+  audit-services:
+    description: Newline-separated ECS service(s) to audit in the format `<cluster>/<service>`.
     required: false
   cage-options:
-    description: Extra options passed to `cage audit`.
+    description: Newline-separated extra options passed to `cage audit`.
     required: false
   issue-title:
     description: Custom issue title. Defaults to "Cage audit report (<region>/<cluster>/<service>)".
