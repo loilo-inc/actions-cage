@@ -1,6 +1,6 @@
 {
   "name": "@loilo-inc/actions-deploy-cage",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "license": "MIT",
   "type": "module",
   "main": "./dist/deploy-runner.js",
@@ -16,6 +16,6 @@
     "@actions/core": "^2",
     "@actions/exec": "^1",
     "@actions/github": "^9",
-    "@loilo-inc/actions-cage": "^0.3.0"
+    "@loilo-inc/actions-cage": "^0.4.0"
   }
 }
