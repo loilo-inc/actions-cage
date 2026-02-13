@@ -5,8 +5,16 @@ export type AuditSummary = {
   low_count: number;
   info_count: number;
   total_count: number;
-  highest_severity: string;
+  highest_severity: Severity;
 };
+
+export type Severity =
+  | "CRITICAL"
+  | "HIGH"
+  | "MEDIUM"
+  | "LOW"
+  | "INFO"
+  | "UNDEFINED";
 
 export type AuditVuln = {
   cve: {
@@ -15,7 +23,7 @@ export type AuditVuln = {
     package_name: string;
     package_version: string;
     uri: string;
-    severity: string;
+    severity: Severity;
   };
   containers: string[];
 };
