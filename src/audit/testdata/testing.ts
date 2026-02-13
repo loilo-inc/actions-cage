@@ -15,7 +15,7 @@ export function makeAuditResult(
       low_count: 4,
       info_count: 5,
       total_count: 15,
-      highest_severity: "critical",
+      highest_severity: "CRITICAL",
     },
     vulns: [
       {
@@ -25,7 +25,7 @@ export function makeAuditResult(
           package_name: "sample-package",
           package_version: "1.0.0",
           uri: "http://example.com/cve/CVE-2024-0001",
-          severity: "critical",
+          severity: "CRITICAL",
         },
         containers: ["container-1", "container-2"],
       },

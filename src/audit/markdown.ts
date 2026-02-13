@@ -12,19 +12,21 @@ export function renderAuditSummaryMarkdown(result: AuditResult): string {
     scanned_at,
     summary: { highest_severity },
   } = result;
-  const meta = [
+  const lines = [
+    "## Scan Summary",
     "| Region | Cluster | Service | Scanned At | Highest Severity |",
     "| --- | --- | --- | --- | --- |",
     `| \`${esc(region)}\` | \`${esc(cluster)}\` | \`${esc(service)}\` | \`${esc(scanned_at)}\` | \`${esc(highest_severity)}\` |`,
+    renderAlert(highest_severity),
+    "",
   ];
-  const vulnsSection = [];
   if (result.vulns.length > 0) {
     const vulnsHeader = [
       "| Severity | CVE | Package | Version | Containers |",
       "| --- | --- | --- | --- | --- |",
     ];
     const vulnsRows = result.vulns.sort(sortVulnsBySeverity).map(renderRow);
-    vulnsSection.push(
+    lines.push(
       `### Vulnerabilities (${result.summary.total_count})`,
       "<details>",
       "<summary>Click to expand vulnerability details</summary>",
@@ -34,13 +36,7 @@ export function renderAuditSummaryMarkdown(result: AuditResult): string {
       "</details>",
     );
   }
-  return [
-    "## Scan Summary",
-    ...meta,
-    renderAlert(highest_severity),
-    "",
-    ...vulnsSection,
-  ].join("\n");
+  return lines.join("\n");
 }
 
 export function renderRow(v: AuditVuln): string {
@@ -64,7 +60,7 @@ export function renderAlert(highest: Severity): string {
       "> [!WARNING]",
       "> **Security Notice:** Medium severity vulnerabilities detected. Please review and address them promptly.",
     ].join("\n");
-  } else if (highest === "LOW" || highest === "INFO") {
+  } else if (highest === "LOW" || highest === "INFORMATIONAL") {
     return [
       "> [!INFO]",
       "> **Security Info:** No Critical or High severity vulnerabilities detected.",

@@ -183,11 +183,13 @@ describe("buildCommentBody", () => {
   });
   it("renders markdown summary", async () => {
     const md = buildCommentBody(okResult);
-    expect(md).toMatchFileSnapshot(resolve("testdata/markdown-ok-snapshot.md"));
+    await expect(md).toMatchFileSnapshot(
+      resolve("testdata/markdown-ok-snapshot.md"),
+    );
   });
   it("renders markdown with vulnerabilities", async () => {
     const md = buildCommentBody(withVulnResult);
-    expect(md).toMatchFileSnapshot(
+    await expect(md).toMatchFileSnapshot(
       resolve("testdata/markdown-with-vulns-snapshot.md"),
     );
   });
@@ -366,7 +368,7 @@ describe("renderRow", () => {
       cve: {
         name: "CVE-2024-1234",
         uri: "https://example.com/cve",
-        severity: "INFO",
+        severity: "INFORMATIONAL",
         description: "Test",
         package_name: "pkg",
         package_version: "1.0.0",
@@ -441,8 +443,8 @@ describe("renderAlert", () => {
     );
   });
 
-  it("should render info alert for INFO severity", () => {
-    const alert = renderAlert("INFO");
+  it("should render info alert for INFORMATIONAL severity", () => {
+    const alert = renderAlert("INFORMATIONAL");
     expect(alert).toContain("> [!INFO]");
     expect(alert).toContain(
       "> **Security Info:** No Critical or High severity vulnerabilities detected.",
