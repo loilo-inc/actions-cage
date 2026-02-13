@@ -16,6 +16,7 @@ jobs:
       - run: npm ci
       - run: npm run fmtcheck
       - run: npm run build
+      - run: npx tsc -p tsconfig.ci.json
       - run: npm run testci
       - uses: codecov/codecov-action@v5
         env:
