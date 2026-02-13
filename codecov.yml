@@ -1,2 +1,5 @@
 ignore:
   - packages/**/testdata/**
+coverage:
+  status:
+    project: off

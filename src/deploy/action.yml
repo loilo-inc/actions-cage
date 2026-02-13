@@ -1,39 +1,31 @@
-name: "Canarycage Deploy"
-description: "Deploy service with cage"
-author: "LoiLo"
+name: Canarycage Deploy
+description: Deploy service with cage
+author: LoiLo
 inputs:
   deploy-context:
-    description: "Directory path that contains service.json and task-definition.json. Mostly relative path from project root."
+    description: Directory path that contains service.json and task-definition.json. Mostly relative path from project root.
     required: true
   region:
-    description: "AWS region that cluster exists"
+    description: AWS region that cluster exists
     required: true
   create-deployment:
-    description: "Create deployment history on the repository. true or false"
+    description: Create deployment history on the repository. true or false
     required: false
-  canary-task-idle-duration:
-    description: "--canaryTaskIdleDuration for cage"
-    required: false
-    deprecationMessage: "canary-task-idle-duration is deprecated. Use cage-options instead."
-  update-service:
-    description: "--updateService for cage (>=4.0)"
-    required: false
-    deprecationMessage: "update-service is deprecated. Use cage-options instead."
   cage-options:
-    description: "Options for cage rollout. Value shold be string. e.g. '--canaryTaskIdleDuration 10 --updateService'"
+    description: Newline-separated extra options passed to `cage deploy`.
     required: false
   environment:
-    description: "Arbitrary release environment for github deployment. e.g. development,staging,production... Required by --create-deployment"
+    description: Arbitrary release environment for github deployment. e.g. development,staging,production... Required by --create-deployment
     required: false
   github-ref:
-    description: "Git tag or branch or sha1 to deploy. Required by --create-deployment."
+    description: Git tag or branch or sha1 to deploy. Required by --create-deployment.
     required: false
   github-repository:
-    description: ":owner/:repo style github repository. Required by --create-deployment. Use github.repository."
+    description: :owner/:repo style github repository. Required by --create-deployment. Use github.repository.
     required: false
   github-token:
-    description: "Github Token to create deployment on the repository. Required by --create-deployment. Use secrets.GITHUB_TOKEN."
+    description: Github Token to create deployment on the repository. Required by --create-deployment. Use secrets.GITHUB_TOKEN.
     required: false
 runs:
-  using: "node24"
-  main: "lib/index.js"
+  using: node24
+  main: lib/index.js

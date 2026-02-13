@@ -1,20 +1,15 @@
 import * as core from "@actions/core";
-import {
-  assertInput,
-  boolify,
-  parseStringToArgs,
-} from "@loilo-inc/actions-cage";
+import { assertInput, boolify, parseListInput } from "@loilo-inc/actions-cage";
 import { audit } from "./audit";
 import { executeAudit } from "./audit-cage";
 import { renderAuditSummaryMarkdown } from "./markdown";
 
 export async function run() {
   const region = assertInput("region");
-  const cluster = core.getInput("cluster");
-  const service = core.getInput("service");
-  const auditContext = core.getInput("audit-context");
-  const cageOptions = core.getInput("cage-options");
   const token = assertInput("github-token");
+  const auditContexts = core.getInput("audit-contexts");
+  const auditServices = core.getInput("audit-services");
+  const cageOptions = core.getInput("cage-options");
   const issueTitle = core.getInput("issue-title") || `Cage audit report`;
   const dryRun = boolify(core.getInput("dry-run"));
   const { owner, repo } = (() => {
@@ -26,28 +21,63 @@ export async function run() {
     const [owner, repo] = [m[1], m[2]];
     return { owner, repo };
   })();
-  if (!auditContext && (!cluster || !service)) {
+  if (!auditContexts && !auditServices) {
     throw new Error(
-      "cluster and service are required when audit-context is not set",
+      "Either 'audit-contexts' or 'audit-services' input must be provided.",
     );
   }
-  const args: string[] = ["--region", region];
-  if (cluster) args.push("--cluster", cluster);
-  if (service) args.push("--service", service);
-  if (cageOptions) {
-    args.push(...parseStringToArgs(cageOptions));
+  for (const { options, args } of iterateAuditTargets({
+    contexts: auditContexts,
+    services: auditServices,
+  })) {
+    const fullArgs: string[] = [
+      "--region",
+      region,
+      ...options,
+      ...parseListInput(cageOptions),
+      ...args,
+    ];
+    if (dryRun) {
+      const result = await executeAudit(fullArgs);
+      const body = renderAuditSummaryMarkdown(result);
+      core.info(`Dry run: issue not created/updated.\n${body}`);
+      return;
+    }
+    await audit({
+      args: fullArgs,
+      params: { owner, repo, token, title: issueTitle },
+    });
   }
-  if (auditContext) {
-    args.push(auditContext);
+}
+
+export function* iterateAuditTargets({
+  contexts,
+  services,
+}: {
+  contexts?: string;
+  services?: string;
+}): Generator<{ options: string[]; args: string[] }> {
+  if (contexts) {
+    for (const ctx of parseListInput(contexts)) {
+      yield { options: [], args: [ctx] };
+    }
   }
-  if (dryRun) {
-    const result = await executeAudit(args);
-    const body = renderAuditSummaryMarkdown(result);
-    core.info(`Dry run: issue not created/updated.\n${body}`);
-    return;
+  if (services) {
+    for (const line of parseListInput(services)) {
+      const [cluster, svc] = parseServiceInput(line);
+      yield { options: ["--cluster", cluster, "--service", svc], args: [] };
+    }
   }
-  await audit({
-    args,
-    params: { owner, repo, token, title: issueTitle },
-  });
+}
+
+export function parseServiceInput(input: string): [string, string] {
+  const pat = /^(.+?)\/(.+?)$/;
+  const m = input.match(pat);
+  if (!m) {
+    throw new Error(
+      `Invalid audit-service format: ${input}. Expected format is <cluster>/<service>.`,
+    );
+  }
+  const [, cluster, svc] = m;
+  return [cluster, svc];
 }
