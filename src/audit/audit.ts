@@ -1,27 +1,33 @@
 import * as core from "@actions/core";
 
 import { getOctokit } from "@actions/github";
-import { executeAudit } from "./audit-cage";
-import {
-  addIssueComment,
-  ensureIssue,
-  ensureLabel,
-  findIssueByTitle,
-} from "./audit-github";
-import { AuditIssueParams } from "./types";
+import { executeCageAudit } from "./audit-cage";
+import { ensureLabel, findIssueByTitle, upsertIssue } from "./audit-github";
+import { renderAuditSummary } from "./markdown";
+import { AuditIssueParams, AuditResult } from "./types";
 
 export async function audit({
-  args,
+  argsList,
   params,
 }: {
-  args: string[];
+  argsList: string[][];
   params: AuditIssueParams;
 }): Promise<void> {
-  const result = await executeAudit(args);
+  const results: AuditResult[] = [];
+  for (const args of argsList) {
+    const result = await executeCageAudit(args);
+    results.push(result);
+  }
+  const allTotal = results.reduce((sum, r) => sum + r.summary.total_count, 0);
+  const { owner, repo, title, dryRun } = params;
+  const body = renderAuditSummary(results);
+  if (dryRun) {
+    core.info(`Dry run: issue not created/updated.\n${body}`);
+    return;
+  }
   const github = getOctokit(params.token);
-  const { owner, repo, title } = params;
   const existing = await findIssueByTitle({ github, owner, repo, title });
-  if (result.summary.total_count === 0) {
+  if (allTotal === 0) {
     core.info(`No vulnerabilities found.`);
     if (existing) {
       core.info(`Closing existing issue #${existing.number}.`);
@@ -46,14 +52,6 @@ export async function audit({
     repo: params.repo,
     name: "canarycage",
   });
-  const updated = await ensureIssue({ github, params });
+  const updated = await upsertIssue({ github, params, body });
   core.info(`Issue ready: ${updated.html_url}`);
-  await addIssueComment({
-    github,
-    owner: params.owner,
-    repo: params.repo,
-    issueNumber: updated.number,
-    result,
-  });
-  core.info(`Comment added: #${updated.number}`);
 }

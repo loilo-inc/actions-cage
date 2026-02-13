@@ -1,13 +1,13 @@
 import * as exec from "@actions/exec";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { executeAudit } from "./audit-cage";
+import { executeCageAudit } from "./audit-cage";
 import { makeAuditResult } from "./testdata/testing";
 
 vi.mock("@actions/github");
 vi.mock("@actions/exec");
 vi.mock("@actions/core");
 
-describe("executeAudit", () => {
+describe("executeCageAudit", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -20,7 +20,7 @@ describe("executeAudit", () => {
       exitCode: 0,
     });
 
-    await executeAudit(["--severity", "high"]);
+    await executeCageAudit(["--severity", "high"]);
 
     expect(exec.getExecOutput).toHaveBeenCalledWith("cage", [
       "audit",
@@ -38,7 +38,7 @@ describe("executeAudit", () => {
       exitCode: 0,
     });
 
-    const result = await executeAudit([]);
+    const result = await executeCageAudit([]);
 
     expect(result).toEqual(mockResult);
   });
@@ -51,7 +51,7 @@ describe("executeAudit", () => {
       exitCode: 0,
     });
 
-    await executeAudit([]);
+    await executeCageAudit([]);
 
     expect(exec.getExecOutput).toHaveBeenCalledWith("cage", [
       "audit",
@@ -66,6 +66,6 @@ describe("executeAudit", () => {
       exitCode: 0,
     });
 
-    await expect(executeAudit([])).rejects.toThrow(SyntaxError);
+    await expect(executeCageAudit([])).rejects.toThrow(SyntaxError);
   });
 });

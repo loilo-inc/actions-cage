@@ -3,12 +3,10 @@ import path from "node:path";
 import { fileURLToPath } from "url";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
-  buildCommentBody,
-  buildCommentMarker,
   esc,
   renderAlert,
-  renderAuditSummaryMarkdown,
-  renderIssueBody,
+  renderAuditResult,
+  renderAuditSummary,
   renderRow,
 } from "./markdown";
 import type { AuditResult, AuditVuln } from "./types";
@@ -21,7 +19,7 @@ async function readSample(p: string): Promise<AuditResult> {
   return JSON.parse(data) as AuditResult;
 }
 
-describe("renderAuditSummaryMarkdown", () => {
+describe("renderAuditResult", () => {
   it("should escape pipe characters in metadata", () => {
     const result: AuditResult = {
       region: "us|east",
@@ -39,7 +37,7 @@ describe("renderAuditSummaryMarkdown", () => {
       },
       vulns: [],
     };
-    const md = renderAuditSummaryMarkdown(result);
+    const md = renderAuditResult(result);
     expect(md).toContain("| `us\\|east` |");
     expect(md).toContain("| `prod\\|cluster` |");
     expect(md).toContain("| `api\\|service` |");
@@ -62,7 +60,7 @@ describe("renderAuditSummaryMarkdown", () => {
       },
       vulns: [],
     };
-    const md = renderAuditSummaryMarkdown(result);
+    const md = renderAuditResult(result);
     expect(md).toContain("| `us-east malicious` |");
   });
 
@@ -95,7 +93,7 @@ describe("renderAuditSummaryMarkdown", () => {
         },
       ],
     };
-    const md = renderAuditSummaryMarkdown(result);
+    const md = renderAuditResult(result);
     expect(md).toContain("<details>");
     expect(md).toContain(
       "<summary>Click to expand vulnerability details</summary>",
@@ -155,7 +153,7 @@ describe("renderAuditSummaryMarkdown", () => {
         },
       ],
     };
-    const md = renderAuditSummaryMarkdown(result);
+    const md = renderAuditResult(result);
     const criticalIndex = md.indexOf("CVE-CRITICAL");
     const highIndex = md.indexOf("CVE-HIGH");
     const lowIndex = md.indexOf("CVE-LOW");
@@ -164,15 +162,7 @@ describe("renderAuditSummaryMarkdown", () => {
   });
 });
 
-describe("renderIssueBody", () => {
-  it("should render issue body", () => {
-    const body = renderIssueBody();
-    expect(body).toContain("Cage audit report.");
-    expect(body).toContain("Results are posted as comments per service.");
-  });
-});
-
-describe("buildCommentBody", () => {
+describe("renderAuditSummary", () => {
   let okResult: AuditResult;
   let withVulnResult: AuditResult;
   beforeAll(async () => {
@@ -181,99 +171,10 @@ describe("buildCommentBody", () => {
       readSample("testdata/audit-ok.json"),
     ]);
   });
-  it("renders markdown summary", async () => {
-    const md = buildCommentBody(okResult);
+  it("renders multiple results", async () => {
+    const md = renderAuditSummary([withVulnResult, okResult]);
     await expect(md).toMatchFileSnapshot(
-      resolve("testdata/markdown-ok-snapshot.md"),
-    );
-  });
-  it("renders markdown with vulnerabilities", async () => {
-    const md = buildCommentBody(withVulnResult);
-    await expect(md).toMatchFileSnapshot(
-      resolve("testdata/markdown-with-vulns-snapshot.md"),
-    );
-  });
-  it("should include marker and rendered markdown", () => {
-    const result: AuditResult = {
-      region: "us-east",
-      cluster: "prod",
-      service: "api",
-      scanned_at: "2024-01-01",
-      summary: {
-        highest_severity: "LOW",
-        critical_count: 0,
-        high_count: 0,
-        medium_count: 0,
-        low_count: 0,
-        info_count: 0,
-        total_count: 0,
-      },
-      vulns: [],
-    };
-    const body = buildCommentBody(result);
-    expect(body).toContain(
-      `<!-- cage-audit:region=us-east;cluster=prod;service=api -->`,
-    );
-    expect(body).toContain("## Scan Summary");
-  });
-});
-
-describe("buildCommentMarker", () => {
-  it("should build a comment marker with region, cluster, and service", () => {
-    const result = {
-      region: "us-east",
-      cluster: "prod",
-      service: "api",
-    };
-    const marker = buildCommentMarker(result);
-    expect(marker).toBe(
-      "<!-- cage-audit:region=us-east;cluster=prod;service=api -->",
-    );
-  });
-
-  it("should escape HTML comment closing tags", () => {
-    const result = {
-      region: "us-->east",
-      cluster: "prod-->cluster",
-      service: "api-->service",
-    };
-    const marker = buildCommentMarker(result);
-    expect(marker).toBe(
-      "<!-- cage-audit:region=useast;cluster=prodcluster;service=apiservice -->",
-    );
-  });
-
-  it("should trim whitespace from values", () => {
-    const result = {
-      region: "  us-east  ",
-      cluster: " prod ",
-      service: "\tapi\n",
-    };
-    const marker = buildCommentMarker(result);
-    expect(marker).toBe(
-      "<!-- cage-audit:region=us-east;cluster=prod;service=api -->",
-    );
-  });
-
-  it("should handle empty strings", () => {
-    const result = {
-      region: "",
-      cluster: "",
-      service: "",
-    };
-    const marker = buildCommentMarker(result);
-    expect(marker).toBe("<!-- cage-audit:region=;cluster=;service= -->");
-  });
-
-  it("should handle multiple comment closing tags", () => {
-    const result = {
-      region: "us-->east-->region",
-      cluster: "prod",
-      service: "api",
-    };
-    const marker = buildCommentMarker(result);
-    expect(marker).toBe(
-      "<!-- cage-audit:region=useastregion;cluster=prod;service=api -->",
+      resolve("testdata/markdown-multiple-snapshot.md"),
     );
   });
 });

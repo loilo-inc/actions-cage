@@ -1,5 +1,6 @@
-<!-- cage-audit:region=us-west-2;cluster=example-cluster;service=example-service -->
 ## Scan Summary
+- Total **2** vulnerabilities found across **2** services.
+## example-service/example-cluster (us-west-2)
 | Region | Cluster | Service | Scanned At | Highest Severity |
 | --- | --- | --- | --- | --- |
 | `us-west-2` | `example-cluster` | `example-service` | `2026-02-05T12:00:00Z` | `CRITICAL` |
@@ -15,3 +16,10 @@
 | CRITICAL | [CVE-2026-0001](https://nvd.nist.gov/vuln/detail/CVE-2026-0001) | openssl | 3.0.0 | app |
 | HIGH | [CVE-2026-0002](https://nvd.nist.gov/vuln/detail/CVE-2026-0002) | libexpat | 2.7.1 | app, worker |
 </details>
+
+## example-service/example-cluster (us-west-2)
+| Region | Cluster | Service | Scanned At | Highest Severity |
+| --- | --- | --- | --- | --- |
+| `us-west-2` | `example-cluster` | `example-service` | `2026-02-05T12:00:00Z` | `UNDEFINED` |
+> [!TIP]
+> **Security Good News:** No vulnerabilities detected!
