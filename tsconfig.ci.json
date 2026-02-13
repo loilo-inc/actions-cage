@@ -1,0 +1,9 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./src/util/tsconfig.ci.json" },
+    { "path": "./src/setup/tsconfig.ci.json" },
+    { "path": "./src/deploy/tsconfig.ci.json" },
+    { "path": "./src/audit/tsconfig.ci.json" }
+  ]
+}
