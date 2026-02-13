@@ -1,22 +1,23 @@
 import { readFile } from "fs/promises";
-import { resolve } from "path";
+import path from "node:path";
 import { fileURLToPath } from "url";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
   buildCommentBody,
   buildCommentMarker,
   esc,
+  renderAlert,
   renderAuditSummaryMarkdown,
   renderIssueBody,
   renderRow,
 } from "./markdown";
 import type { AuditResult, AuditVuln } from "./types";
 
-async function readSample(path: string): Promise<AuditResult> {
-  const data = await readFile(
-    resolve(fileURLToPath(import.meta.url), "..", path),
-    "utf-8",
-  );
+const resolve = (s: string) =>
+  path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".", s);
+
+async function readSample(p: string): Promise<AuditResult> {
+  const data = await readFile(resolve(p), "utf-8");
   return JSON.parse(data) as AuditResult;
 }
 
@@ -28,7 +29,7 @@ describe("renderAuditSummaryMarkdown", () => {
       service: "api|service",
       scanned_at: "2024-01-01",
       summary: {
-        highest_severity: "critical",
+        highest_severity: "CRITICAL",
         critical_count: 0,
         high_count: 0,
         medium_count: 0,
@@ -39,9 +40,9 @@ describe("renderAuditSummaryMarkdown", () => {
       vulns: [],
     };
     const md = renderAuditSummaryMarkdown(result);
-    expect(md).toContain("Region: `us\\|east`");
-    expect(md).toContain("Cluster: `prod\\|cluster`");
-    expect(md).toContain("Service: `api\\|service`");
+    expect(md).toContain("| `us\\|east` |");
+    expect(md).toContain("| `prod\\|cluster` |");
+    expect(md).toContain("| `api\\|service` |");
   });
 
   it("should escape newlines in metadata", () => {
@@ -51,7 +52,7 @@ describe("renderAuditSummaryMarkdown", () => {
       service: "api",
       scanned_at: "2024-01-01",
       summary: {
-        highest_severity: "critical",
+        highest_severity: "CRITICAL",
         critical_count: 0,
         high_count: 0,
         medium_count: 0,
@@ -62,28 +63,7 @@ describe("renderAuditSummaryMarkdown", () => {
       vulns: [],
     };
     const md = renderAuditSummaryMarkdown(result);
-    expect(md).toContain("Region: `us-east malicious`");
-  });
-
-  it("should display summary table with counts", () => {
-    const result: AuditResult = {
-      region: "us-east",
-      cluster: "prod",
-      service: "api",
-      scanned_at: "2024-01-01",
-      summary: {
-        highest_severity: "high",
-        critical_count: 5,
-        high_count: 10,
-        medium_count: 3,
-        low_count: 2,
-        info_count: 1,
-        total_count: 21,
-      },
-      vulns: [],
-    };
-    const md = renderAuditSummaryMarkdown(result);
-    expect(md).toContain("| 5 | 10 | 3 | 2 | 1 | 21 |");
+    expect(md).toContain("| `us-east malicious` |");
   });
 
   it("should render expandable details for vulnerabilities", () => {
@@ -93,7 +73,7 @@ describe("renderAuditSummaryMarkdown", () => {
       service: "api",
       scanned_at: "2024-01-01",
       summary: {
-        highest_severity: "critical",
+        highest_severity: "CRITICAL",
         critical_count: 1,
         high_count: 0,
         medium_count: 0,
@@ -106,7 +86,7 @@ describe("renderAuditSummaryMarkdown", () => {
           cve: {
             name: "CVE-2024-1234",
             uri: "https://example.com/cve",
-            severity: "critical",
+            severity: "CRITICAL",
             description: "Example vulnerability",
             package_name: "openssl",
             package_version: "1.0.0",
@@ -131,7 +111,7 @@ describe("renderAuditSummaryMarkdown", () => {
       service: "api",
       scanned_at: "2024-01-01",
       summary: {
-        highest_severity: "critical",
+        highest_severity: "CRITICAL",
         critical_count: 1,
         high_count: 2,
         medium_count: 0,
@@ -144,7 +124,7 @@ describe("renderAuditSummaryMarkdown", () => {
           cve: {
             name: "CVE-LOW",
             uri: "https://example.com/low",
-            severity: "low",
+            severity: "LOW",
             description: "Low",
             package_name: "pkg1",
             package_version: "1.0.0",
@@ -155,7 +135,7 @@ describe("renderAuditSummaryMarkdown", () => {
           cve: {
             name: "CVE-CRITICAL",
             uri: "https://example.com/critical",
-            severity: "critical",
+            severity: "CRITICAL",
             description: "Critical",
             package_name: "pkg2",
             package_version: "1.0.0",
@@ -166,7 +146,7 @@ describe("renderAuditSummaryMarkdown", () => {
           cve: {
             name: "CVE-HIGH",
             uri: "https://example.com/high",
-            severity: "high",
+            severity: "HIGH",
             description: "High",
             package_name: "pkg3",
             package_version: "1.0.0",
@@ -203,11 +183,15 @@ describe("buildCommentBody", () => {
   });
   it("renders markdown summary", async () => {
     const md = buildCommentBody(okResult);
-    expect(md).toMatchSnapshot();
+    await expect(md).toMatchFileSnapshot(
+      resolve("testdata/markdown-ok-snapshot.md"),
+    );
   });
   it("renders markdown with vulnerabilities", async () => {
     const md = buildCommentBody(withVulnResult);
-    expect(md).toMatchSnapshot();
+    await expect(md).toMatchFileSnapshot(
+      resolve("testdata/markdown-with-vulns-snapshot.md"),
+    );
   });
   it("should include marker and rendered markdown", () => {
     const result: AuditResult = {
@@ -216,7 +200,7 @@ describe("buildCommentBody", () => {
       service: "api",
       scanned_at: "2024-01-01",
       summary: {
-        highest_severity: "low",
+        highest_severity: "LOW",
         critical_count: 0,
         high_count: 0,
         medium_count: 0,
@@ -300,7 +284,7 @@ describe("renderRow", () => {
       cve: {
         name: "CVE-2024-1234",
         uri: "https://example.com/cve/2024-1234",
-        severity: "critical",
+        severity: "CRITICAL",
         description: "Test vulnerability",
         package_name: "openssl",
         package_version: "1.0.0",
@@ -309,7 +293,7 @@ describe("renderRow", () => {
     };
     const row = renderRow(vuln);
     expect(row).toBe(
-      "| critical | [CVE-2024-1234](https://example.com/cve/2024-1234) | openssl | 1.0.0 | container-1, container-2 |",
+      "| CRITICAL | [CVE-2024-1234](https://example.com/cve/2024-1234) | openssl | 1.0.0 | container-1, container-2 |",
     );
   });
 
@@ -318,7 +302,7 @@ describe("renderRow", () => {
       cve: {
         name: "CVE-2024-1234",
         uri: "https://example.com/cve|2024|1234",
-        severity: "high",
+        severity: "HIGH",
         description: "Test",
         package_name: "pkg",
         package_version: "1.0.0",
@@ -336,7 +320,7 @@ describe("renderRow", () => {
       cve: {
         name: "CVE|2024|1234",
         uri: "https://example.com/cve",
-        severity: "high",
+        severity: "HIGH",
         description: "Test",
         package_name: "pkg",
         package_version: "1.0.0",
@@ -352,7 +336,7 @@ describe("renderRow", () => {
       cve: {
         name: "CVE-2024-1234",
         uri: "https://example.com/cve",
-        severity: "medium",
+        severity: "MEDIUM",
         description: "Test",
         package_name: "open\nssl",
         package_version: "1.0.0",
@@ -368,7 +352,7 @@ describe("renderRow", () => {
       cve: {
         name: "CVE-2024-1234",
         uri: "https://example.com/cve",
-        severity: "low",
+        severity: "LOW",
         description: "Test",
         package_name: "pkg",
         package_version: "1.0.0",
@@ -384,7 +368,7 @@ describe("renderRow", () => {
       cve: {
         name: "CVE-2024-1234",
         uri: "https://example.com/cve",
-        severity: "info",
+        severity: "INFORMATIONAL",
         description: "Test",
         package_name: "pkg",
         package_version: "1.0.0",
@@ -423,5 +407,61 @@ describe("esc", () => {
 
   it("should not modify text without special characters", () => {
     expect(esc("normal text")).toBe("normal text");
+  });
+});
+
+describe("renderAlert", () => {
+  it("should render caution alert for CRITICAL severity", () => {
+    const alert = renderAlert("CRITICAL");
+    expect(alert).toContain("> [!CAUTION]");
+    expect(alert).toContain(
+      "> **Security Alert:** Critical or High severity vulnerabilities detected! Immediate action required.",
+    );
+  });
+
+  it("should render caution alert for HIGH severity", () => {
+    const alert = renderAlert("HIGH");
+    expect(alert).toContain("> [!CAUTION]");
+    expect(alert).toContain(
+      "> **Security Alert:** Critical or High severity vulnerabilities detected! Immediate action required.",
+    );
+  });
+
+  it("should render warning alert for MEDIUM severity", () => {
+    const alert = renderAlert("MEDIUM");
+    expect(alert).toContain("> [!WARNING]");
+    expect(alert).toContain(
+      "> **Security Notice:** Medium severity vulnerabilities detected. Please review and address them promptly.",
+    );
+  });
+
+  it("should render info alert for LOW severity", () => {
+    const alert = renderAlert("LOW");
+    expect(alert).toContain("> [!INFO]");
+    expect(alert).toContain(
+      "> **Security Info:** No Critical or High severity vulnerabilities detected.",
+    );
+  });
+
+  it("should render info alert for INFORMATIONAL severity", () => {
+    const alert = renderAlert("INFORMATIONAL");
+    expect(alert).toContain("> [!INFO]");
+    expect(alert).toContain(
+      "> **Security Info:** No Critical or High severity vulnerabilities detected.",
+    );
+  });
+
+  it("should render tip alert for UNDEFINED severity", () => {
+    const alert = renderAlert("UNDEFINED");
+    expect(alert).toContain("> [!TIP]");
+    expect(alert).toContain(
+      "> **Security Good News:** No vulnerabilities detected!",
+    );
+  });
+
+  it("should format alert with newlines", () => {
+    const alert = renderAlert("CRITICAL");
+    const lines = alert.split("\n");
+    expect(lines).toHaveLength(2);
   });
 });

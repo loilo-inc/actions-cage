@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { AuditVuln, sortVulnsBySeverity } from "./types";
+import { AuditVuln, Severity, sortVulnsBySeverity } from "./types";
 
 describe("sortVulnsBySeverity", () => {
-  const createVuln = (severity: string, name: string): AuditVuln => ({
+  const createVuln = (severity: Severity, name: string): AuditVuln => ({
     cve: {
       name,
       description: "test",
@@ -16,23 +16,23 @@ describe("sortVulnsBySeverity", () => {
 
   it("should sort vulnerabilities by severity order", () => {
     const vulns = [
-      createVuln("info", "vuln1"),
-      createVuln("critical", "vuln2"),
-      createVuln("medium", "vuln3"),
+      createVuln("INFORMATIONAL", "vuln1"),
+      createVuln("CRITICAL", "vuln2"),
+      createVuln("MEDIUM", "vuln3"),
     ];
 
     vulns.sort(sortVulnsBySeverity);
 
-    expect(vulns[0].cve.severity).toBe("critical");
-    expect(vulns[1].cve.severity).toBe("medium");
-    expect(vulns[2].cve.severity).toBe("info");
+    expect(vulns[0].cve.severity).toBe("CRITICAL");
+    expect(vulns[1].cve.severity).toBe("MEDIUM");
+    expect(vulns[2].cve.severity).toBe("INFORMATIONAL");
   });
 
   it("should sort by name when severities are equal", () => {
     const vulns = [
-      createVuln("high", "zebra"),
-      createVuln("high", "alpha"),
-      createVuln("high", "beta"),
+      createVuln("HIGH", "zebra"),
+      createVuln("HIGH", "alpha"),
+      createVuln("HIGH", "beta"),
     ];
 
     vulns.sort(sortVulnsBySeverity);
@@ -44,30 +44,34 @@ describe("sortVulnsBySeverity", () => {
 
   it("should handle case-insensitive severity comparison", () => {
     const vulns = [
-      createVuln("INFO", "vuln1"),
+      createVuln("INFORMATIONAL", "vuln1"),
       createVuln("CRITICAL", "vuln2"),
-      createVuln("Medium", "vuln3"),
+      createVuln("MEDIUM", "vuln3"),
     ];
 
     vulns.sort(sortVulnsBySeverity);
 
     expect(vulns[0].cve.severity).toBe("CRITICAL");
-    expect(vulns[1].cve.severity).toBe("Medium");
-    expect(vulns[2].cve.severity).toBe("INFO");
+    expect(vulns[1].cve.severity).toBe("MEDIUM");
+    expect(vulns[2].cve.severity).toBe("INFORMATIONAL");
   });
 
   it("should maintain all severity levels in correct order", () => {
     const vulns = [
-      createVuln("low", "vuln1"),
-      createVuln("high", "vuln2"),
-      createVuln("info", "vuln3"),
-      createVuln("critical", "vuln4"),
-      createVuln("medium", "vuln5"),
+      createVuln("LOW", "vuln1"),
+      createVuln("HIGH", "vuln2"),
+      createVuln("INFORMATIONAL", "vuln3"),
+      createVuln("CRITICAL", "vuln4"),
+      createVuln("MEDIUM", "vuln5"),
     ];
 
     vulns.sort(sortVulnsBySeverity);
-
-    const severities = vulns.map((v) => v.cve.severity.toLowerCase());
-    expect(severities).toEqual(["critical", "high", "medium", "low", "info"]);
+    expect(vulns.map((v) => v.cve.severity)).toEqual([
+      "CRITICAL",
+      "HIGH",
+      "MEDIUM",
+      "LOW",
+      "INFORMATIONAL",
+    ]);
   });
 });

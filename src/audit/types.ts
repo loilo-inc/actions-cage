@@ -5,8 +5,18 @@ export type AuditSummary = {
   low_count: number;
   info_count: number;
   total_count: number;
-  highest_severity: string;
+  highest_severity: Severity;
 };
+
+const sevOrder = [
+  "CRITICAL",
+  "HIGH",
+  "MEDIUM",
+  "LOW",
+  "INFORMATIONAL",
+  "UNDEFINED",
+] as const;
+export type Severity = (typeof sevOrder)[number];
 
 export type AuditVuln = {
   cve: {
@@ -15,7 +25,7 @@ export type AuditVuln = {
     package_name: string;
     package_version: string;
     uri: string;
-    severity: string;
+    severity: Severity;
   };
   containers: string[];
 };
@@ -36,10 +46,9 @@ export type AuditIssueParams = {
   title: string;
 };
 
-const sevOrder = ["critical", "high", "medium", "low", "info"];
 export function sortVulnsBySeverity(a: AuditVuln, b: AuditVuln): number {
-  const sevA = sevOrder.indexOf(a.cve.severity.toLowerCase());
-  const sevB = sevOrder.indexOf(b.cve.severity.toLowerCase());
+  const sevA = sevOrder.indexOf(a.cve.severity);
+  const sevB = sevOrder.indexOf(b.cve.severity);
   if (sevA !== sevB) {
     return sevA - sevB;
   }
