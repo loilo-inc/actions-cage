@@ -1,5 +1,5 @@
 import * as core from "@actions/core";
-import { exec } from "@actions/exec";
+import { exec, getExecOutput } from "@actions/exec";
 import * as fs from "node:fs/promises";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { release, updatePackageJson } from "./release.js";
@@ -21,12 +21,15 @@ describe("release", () => {
       dependencies: {},
     };
     vi.mocked(core.getInput).mockReturnValue("2.0.0");
+    vi.mocked(getExecOutput).mockResolvedValue({
+      stdout: JSON.stringify(["packages/pkg-a", "packages/pkg-b"]),
+    } as any);
     vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockPackageJson));
 
     await release();
 
-    expect(fs.readFile).toHaveBeenCalledTimes(4);
-    expect(fs.writeFile).toHaveBeenCalledTimes(4);
+    expect(fs.readFile).toHaveBeenCalledTimes(2);
+    expect(fs.writeFile).toHaveBeenCalledTimes(2);
     expect(exec).toHaveBeenCalledWith("npm", ["publish", "--workspaces"]);
     expect(core.info).toHaveBeenCalledWith("📦 package 2.0.0 released!");
   });

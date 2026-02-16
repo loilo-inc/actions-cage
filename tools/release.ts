@@ -1,12 +1,12 @@
 import * as core from "@actions/core";
-import { exec } from "@actions/exec";
+import { exec, getExecOutput } from "@actions/exec";
 import { readFile, writeFile } from "node:fs/promises";
 
-// GHAでGHPRにnpmリリースする
 export async function release() {
-  let version = core.getInput("version");
+  const version = core.getInput("version");
   if (!version) throw new Error("no version input");
-  const packages = ["src/audit", "src/deploy", "src/setup", "src/util"];
+  const wsJson = await getExecOutput("npm", ["pkg", "get", "packages"]);
+  const packages = JSON.parse(wsJson.stdout) as string[];
   await Promise.all(packages.map((pkg) => updatePackageJson(pkg, version)));
   await exec("npm", ["publish", "--workspaces"]);
   core.info(`📦 package ${version} released!`);
