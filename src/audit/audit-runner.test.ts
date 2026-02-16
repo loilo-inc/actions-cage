@@ -54,12 +54,13 @@ describe("run", () => {
     await run();
 
     expect(vi.mocked(audit)).toHaveBeenCalledWith({
-      args: ["--region", "us-east-1", "ctx1"],
+      argsList: [["--region", "us-east-1", "ctx1"]],
       params: {
         owner: "owner",
         repo: "repo",
         token: "token123",
         title: "Test Report",
+        dryRun: false,
       },
     });
   });
@@ -74,19 +75,15 @@ describe("run", () => {
     await run();
 
     expect(vi.mocked(audit)).toHaveBeenCalledWith({
-      args: [
-        "--region",
-        "us-west-2",
-        "--cluster",
-        "cluster1",
-        "--service",
-        "svc1",
+      argsList: [
+        ["--region", "us-west-2", "--cluster", "cluster1", "--service", "svc1"],
       ],
       params: {
         owner: "owner",
         repo: "repo",
         token: "token456",
         title: "Cage audit report",
+        dryRun: false,
       },
     });
   });
@@ -108,21 +105,6 @@ describe("run", () => {
     );
   });
 
-  it("should handle dry-run mode without creating issue", async () => {
-    mockInput({
-      region: "us-east-1",
-      "github-token": "token123",
-      "audit-contexts": "ctx1",
-      "dry-run": "true",
-    });
-    vi.mocked(audit).mockResolvedValue(undefined);
-
-    await run();
-
-    expect(vi.mocked(audit)).not.toHaveBeenCalled();
-    expect(vi.mocked(core.info)).toHaveBeenCalled();
-  });
-
   it("should include cage-options in audit arguments", async () => {
     mockInput({
       region: "us-east-1",
@@ -133,22 +115,36 @@ describe("run", () => {
     await run();
 
     expect(vi.mocked(audit)).toHaveBeenCalledWith({
-      args: [
-        "--region",
-        "us-east-1",
-        "--opt1",
-        "value1",
-        "--opt2",
-        "value2",
-        "ctx1",
+      argsList: [
+        [
+          "--region",
+          "us-east-1",
+          "--opt1",
+          "value1",
+          "--opt2",
+          "value2",
+          "ctx1",
+        ],
       ],
       params: {
         owner: "owner",
         repo: "repo",
         token: "token123",
         title: "Cage audit report",
+        dryRun: false,
       },
     });
+  });
+  it("should throw error when no audit targets found", async () => {
+    mockInput({
+      region: "us-east-1",
+      "github-token": "token123",
+      "audit-contexts": "\n\n",
+      "audit-services": "",
+    });
+    await expect(run()).rejects.toThrow(
+      "Either 'audit-contexts' or 'audit-services' input must be provided.",
+    );
   });
 });
 

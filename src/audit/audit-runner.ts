@@ -1,8 +1,6 @@
 import * as core from "@actions/core";
 import { assertInput, boolify, parseListInput } from "@loilo-inc/actions-cage";
 import { audit } from "./audit";
-import { executeAudit } from "./audit-cage";
-import { renderAuditSummaryMarkdown } from "./markdown";
 
 export async function run() {
   const region = assertInput("region");
@@ -21,33 +19,27 @@ export async function run() {
     const [owner, repo] = [m[1], m[2]];
     return { owner, repo };
   })();
-  if (!auditContexts && !auditServices) {
+  const fullArgsList = Array.from(
+    iterateAuditTargets({
+      contexts: auditContexts,
+      services: auditServices,
+    }),
+  ).map(({ options, args }) => [
+    "--region",
+    region,
+    ...options,
+    ...parseListInput(cageOptions),
+    ...args,
+  ]);
+  if (fullArgsList.length === 0) {
     throw new Error(
       "Either 'audit-contexts' or 'audit-services' input must be provided.",
     );
   }
-  for (const { options, args } of iterateAuditTargets({
-    contexts: auditContexts,
-    services: auditServices,
-  })) {
-    const fullArgs: string[] = [
-      "--region",
-      region,
-      ...options,
-      ...parseListInput(cageOptions),
-      ...args,
-    ];
-    if (dryRun) {
-      const result = await executeAudit(fullArgs);
-      const body = renderAuditSummaryMarkdown(result);
-      core.info(`Dry run: issue not created/updated.\n${body}`);
-      return;
-    }
-    await audit({
-      args: fullArgs,
-      params: { owner, repo, token, title: issueTitle },
-    });
-  }
+  await audit({
+    argsList: fullArgsList,
+    params: { owner, repo, token, title: issueTitle, dryRun },
+  });
 }
 
 export function* iterateAuditTargets({
