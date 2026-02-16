@@ -1,4 +1,4 @@
-name: CI
+name: Release
 on:
   push:
     tags:
@@ -16,6 +16,8 @@ jobs:
           node-version: "24"
           registry-url: "https://npm.pkg.github.com/"
           scope: "@loilo-inc"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: npm ci
       - run: npm run build
       - uses: ./.github/actions/release

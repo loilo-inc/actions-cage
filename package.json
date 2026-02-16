@@ -14,8 +14,7 @@
     "fmtcheck": "prettier --check '**/*.ts'",
     "test": "vitest run",
     "build": "tsc -b",
-    "testci": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=json --coverage.reportsDirectory=coverage",
-    "release": "changeset publish"
+    "testci": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=json --coverage.reportsDirectory=coverage"
   },
   "dependencies": {
     "@actions/core": "^2",

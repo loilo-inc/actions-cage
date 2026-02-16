@@ -1,2 +1,9 @@
+import * as core from "@actions/core";
 import { release } from "../../../tools/release.mjs";
-release();
+
+try {
+  await release();
+} catch (error) {
+  const message = error instanceof Error ? error.message : String(error);
+  core.setFailed(message);
+}
