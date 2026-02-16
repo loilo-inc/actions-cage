@@ -18,7 +18,6 @@ const makeMockOctokit = () => {
         createLabel: vi.fn(),
       },
     },
-    request: vi.fn(),
   };
 };
 
@@ -243,7 +242,7 @@ describe("upsertIssue", () => {
     };
     mockOctokit.rest.issues.listForRepo.mockResolvedValue({ data: [] });
     mockOctokit.rest.issues.create.mockResolvedValue({ data: newIssue });
-
+    mockOctokit.rest.issues.getLabel.mockRejectedValue({ status: 404 });
     const result = await upsertIssue({
       github: mockOctokit as any,
       params: { owner: "o", repo: "r", title: "New Issue", token: "t" },
@@ -257,6 +256,13 @@ describe("upsertIssue", () => {
       title: "New Issue",
       body: "New issue body",
       labels: ["canarycage"],
+    });
+    expect(mockOctokit.rest.issues.createLabel).toHaveBeenCalledWith({
+      owner: "o",
+      repo: "r",
+      name: "canarycage",
+      color: expect.any(String),
+      description: "cage audit reports",
     });
   });
 });
