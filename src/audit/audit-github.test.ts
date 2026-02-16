@@ -1,13 +1,8 @@
 import * as github from "@actions/github";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ensureLabel, findIssueByTitle, upsertIssue } from "./audit-github";
 
 vi.mock("@actions/github");
-
-const resolve = (path: string) =>
-  join(dirname(fileURLToPath(import.meta.url)), path);
 
 const makeMockOctokit = () => {
   return {
