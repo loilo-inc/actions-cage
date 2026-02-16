@@ -17,8 +17,9 @@ inputs:
     description: Newline-separated extra options passed to `cage audit`.
     required: false
   issue-title:
-    description: Custom issue title. Defaults to "Cage audit report (<region>/<cluster>/<service>)".
+    description: Custom issue title. If not provided, the title will be "Cage audit report".
     required: false
+    default: Cage audit report
   dry-run:
     description: If true, do not create/update the issue; only log the summary.
     required: false
