@@ -58,7 +58,7 @@ export async function ensureLabel({
   try {
     await github.rest.issues.getLabel({ owner, repo, name });
   } catch (e: any) {
-    if (!(typeof e.status === "number" && e.status === 404)) {
+    if (e?.status !== 404) {
       throw e;
     }
     await github.rest.issues.createLabel({

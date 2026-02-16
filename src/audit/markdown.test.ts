@@ -171,6 +171,22 @@ describe("renderAuditSummary", () => {
       readSample("testdata/audit-ok.json"),
     ]);
   });
+  it("renders summary with no results", () => {
+    const md = renderAuditSummary([]);
+    expect(md).toBe("## Scan Summary\n\nNo services were scanned.");
+  });
+  it("renders summary with vulnerabilities", async () => {
+    const md = renderAuditSummary([withVulnResult]);
+    await expect(md).toMatchFileSnapshot(
+      resolve("testdata/markdown-with-vulns-snapshot.md"),
+    );
+  });
+  it("renders summary with no vulnerabilities", async () => {
+    const md = renderAuditSummary([okResult]);
+    await expect(md).toMatchFileSnapshot(
+      resolve("testdata/markdown-ok-snapshot.md"),
+    );
+  });
   it("renders multiple results", async () => {
     const md = renderAuditSummary([withVulnResult, okResult]);
     await expect(md).toMatchFileSnapshot(

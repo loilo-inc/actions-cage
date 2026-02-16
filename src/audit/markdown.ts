@@ -5,6 +5,9 @@ export function esc(text: string): string {
 }
 
 export function renderAuditSummary(results: AuditResult[]): string {
+  if (results.length === 0) {
+    return "## Scan Summary\n\nNo services were scanned.";
+  }
   const lines = ["## Scan Summary"];
   const totalVulns = results.reduce(
     (acc, res) => acc + res.summary.total_count,
