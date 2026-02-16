@@ -1,0 +1,13 @@
+name: Release
+description: Release packages to GHPR
+inputs:
+  version:
+    description: Version to release (e.g. "1.2.3"). Required.
+    required: true
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: npx tsx ./.github/actions/release/index.ts
+      env:
+        INPUT_VERSION: ${{ inputs.version }}

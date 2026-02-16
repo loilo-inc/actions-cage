@@ -1,6 +1,6 @@
 {
   "name": "@loilo-inc/actions-setup-cage",
-  "version": "0.4.0",
+  "version": "0.0.0",
   "license": "MIT",
   "type": "module",
   "main": "./dist/setup-runner.js",
@@ -17,7 +17,7 @@
     "@actions/github": "^9",
     "@actions/io": "^2",
     "@actions/tool-cache": "^3",
-    "@loilo-inc/actions-cage": "^0.4.0",
+    "@loilo-inc/actions-cage": "file://../util",
     "semver": "^7.6.2"
   }
 }
