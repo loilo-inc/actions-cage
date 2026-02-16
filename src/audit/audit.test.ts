@@ -55,9 +55,6 @@ describe("audit", () => {
       vi.mocked(executeCageAudit).mockResolvedValue({
         summary: { total_count: 0 },
       } as any);
-      vi.mocked(findIssueByTitle).mockResolvedValue({ number: 42 } as any);
-      vi.mocked(getOctokit).mockReturnValue(mockGithub as any);
-
       await audit({
         argsList: mockArgs,
         params: { ...mockParams, dryRun: true },
@@ -65,6 +62,7 @@ describe("audit", () => {
       expect(core.info).lastCalledWith(
         expect.stringContaining("Dry run: issue not closed."),
       );
+      expect(getOctokit).not.toHaveBeenCalled();
       expect(mockGithub.rest.issues.update).not.toHaveBeenCalled();
     });
   });

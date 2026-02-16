@@ -23,22 +23,22 @@ export async function audit({
   if (allTotal === 0) {
     core.info(`No vulnerabilities found.`);
     core.info(`Checking for existing issue to close...`);
+    if (dryRun) {
+      core.info(`Dry run: issue not closed.`);
+      return;
+    }
     const github = getOctokit(params.token);
     const existing = await findIssueByTitle({ github, owner, repo, title });
     if (existing) {
       core.info(`Existing issue found: #${existing.number}. Closing it...`);
-      if (dryRun) {
-        core.info(`Dry run: issue not closed.`);
-      } else {
-        await github.rest.issues.update({
-          owner,
-          repo,
-          issue_number: existing.number,
-          state: "closed",
-          state_reason: "completed",
-        });
-        core.info(`Issue #${existing.number} closed.`);
-      }
+      await github.rest.issues.update({
+        owner,
+        repo,
+        issue_number: existing.number,
+        state: "closed",
+        state_reason: "completed",
+      });
+      core.info(`Issue #${existing.number} closed.`);
     } else {
       core.info(`No existing issue to close.`);
     }
@@ -47,12 +47,12 @@ export async function audit({
   const body = renderAuditSummary(results);
   if (dryRun) {
     core.info(`Dry run: issue not created/updated.\n${body}`);
-  } else {
-    const github = getOctokit(params.token);
-    core.info(
-      `Creating or updating issue '${params.title}' in ${params.owner}/${params.repo}`,
-    );
-    const updated = await upsertIssue({ github, params, body });
-    core.info(`Issue ready: ${updated.html_url}`);
+    return;
   }
+  const github = getOctokit(params.token);
+  core.info(
+    `Creating or updating issue '${params.title}' in ${params.owner}/${params.repo}`,
+  );
+  const updated = await upsertIssue({ github, params, body });
+  core.info(`Issue ready: ${updated.html_url}`);
 }
