@@ -9,6 +9,8 @@ jobs:
     permissions:
       contents: write
       packages: write
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -16,8 +18,6 @@ jobs:
           node-version: "24"
           registry-url: "https://npm.pkg.github.com/"
           scope: "@loilo-inc"
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: npm ci
       - run: npm run build
       - uses: ./.github/actions/release
