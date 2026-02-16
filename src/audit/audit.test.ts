@@ -34,19 +34,39 @@ describe("audit", () => {
     vi.clearAllMocks();
   });
 
-  it("should handle dry run mode", async () => {
-    vi.mocked(executeCageAudit).mockResolvedValue({
-      summary: { total_count: 5 },
-    } as any);
-    vi.mocked(renderAuditSummary).mockReturnValue("summary");
+  describe("dry run mode", () => {
+    it("should not create/update issues when vulnerabilities are found", async () => {
+      vi.mocked(executeCageAudit).mockResolvedValue({
+        summary: { total_count: 5 },
+      } as any);
+      vi.mocked(renderAuditSummary).mockReturnValue("summary");
 
-    await audit({
-      argsList: mockArgs,
-      params: { ...mockParams, dryRun: true },
+      await audit({
+        argsList: mockArgs,
+        params: { ...mockParams, dryRun: true },
+      });
+
+      expect(core.info).toHaveBeenCalledWith(
+        expect.stringContaining("Dry run"),
+      );
+      expect(getOctokit).not.toHaveBeenCalled();
     });
+    it("should not close issues when no vulnerabilities are found", async () => {
+      vi.mocked(executeCageAudit).mockResolvedValue({
+        summary: { total_count: 0 },
+      } as any);
+      vi.mocked(findIssueByTitle).mockResolvedValue({ number: 42 } as any);
+      vi.mocked(getOctokit).mockReturnValue(mockGithub as any);
 
-    expect(core.info).toHaveBeenCalledWith(expect.stringContaining("Dry run"));
-    expect(getOctokit).not.toHaveBeenCalled();
+      await audit({
+        argsList: mockArgs,
+        params: { ...mockParams, dryRun: true },
+      });
+      expect(core.info).lastCalledWith(
+        expect.stringContaining("Dry run: issue not closed."),
+      );
+      expect(mockGithub.rest.issues.update).not.toHaveBeenCalled();
+    });
   });
 
   it("should close existing issue when no vulnerabilities found", async () => {

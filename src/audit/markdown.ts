@@ -29,7 +29,7 @@ export function renderAuditResult(result: AuditResult): string {
     summary: { highest_severity },
   } = result;
   const lines = [
-    `## ${esc(cluster)}/${esc(service)} (${esc(region)})`,
+    `## \`${esc(cluster)}\` / \`${esc(service)}\` (\`${esc(region)}\`)`,
     "| Region | Cluster | Service | Scanned At | Highest Severity |",
     "| --- | --- | --- | --- | --- |",
     `| \`${esc(region)}\` | \`${esc(cluster)}\` | \`${esc(service)}\` | \`${esc(scanned_at)}\` | \`${esc(highest_severity)}\` |`,
