@@ -1,11 +1,14 @@
 name: CI
 on:
   push:
-    branches:
-      - "**"
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -14,13 +17,7 @@ jobs:
           registry-url: "https://npm.pkg.github.com/"
           scope: "@loilo-inc"
       - run: npm ci
-      - run: npm run fmtcheck
       - run: npm run build
-      - run: npx tsc -p tsconfig.ci.json
-      - run: npm run testci
-      - uses: codecov/codecov-action@v5
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      - uses: ./.github/actions/release
         with:
-          fail_ci_if_error: true
-          files: coverage/coverage-final.json
+          version: ${{ github.ref_name }}
