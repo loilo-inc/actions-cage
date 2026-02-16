@@ -8,6 +8,11 @@ vi.mock("./markdown");
 vi.mock("./audit-cage");
 
 describe("run", () => {
+  const defaultInputs = {
+    region: "us-east-1",
+    "github-token": "token123",
+    "issue-title": "Cage audit report",
+  };
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.GITHUB_REPOSITORY = "owner/repo";
@@ -21,22 +26,24 @@ describe("run", () => {
 
   it("should throw error when GITHUB_REPOSITORY is not set", async () => {
     delete process.env.GITHUB_REPOSITORY;
-    mockInput({
-      "audit-contexts": "ctx1",
-      region: "us-east-1",
-      "github-token": "token123",
-    });
+    mockInput(defaultInputs);
 
     await expect(run()).rejects.toThrow(
       "GITHUB_REPOSITORY is not set or invalid: undefined",
     );
   });
 
-  it("should throw error when neither audit-contexts nor audit-services provided", async () => {
+  it("should throw error when issue-title is empty", async () => {
     mockInput({
-      region: "us-east-1",
-      "github-token": "token123",
+      ...defaultInputs,
+      "issue-title": "   ",
     });
+
+    await expect(run()).rejects.toThrow("issue-title input cannot be empty");
+  });
+
+  it("should throw error when neither audit-contexts nor audit-services provided", async () => {
+    mockInput(defaultInputs);
     await expect(run()).rejects.toThrow(
       "Either 'audit-contexts' or 'audit-services' input must be provided.",
     );
@@ -44,10 +51,8 @@ describe("run", () => {
 
   it("should execute audit with context options", async () => {
     mockInput({
-      region: "us-east-1",
-      "github-token": "token123",
+      ...defaultInputs,
       "audit-contexts": "ctx1",
-      "cage-options": "",
       "issue-title": "Test Report",
     });
 
@@ -67,8 +72,7 @@ describe("run", () => {
 
   it("should execute audit with service options", async () => {
     mockInput({
-      region: "us-west-2",
-      "github-token": "token456",
+      ...defaultInputs,
       "audit-services": "cluster1/svc1",
     });
 
@@ -76,39 +80,21 @@ describe("run", () => {
 
     expect(vi.mocked(audit)).toHaveBeenCalledWith({
       argsList: [
-        ["--region", "us-west-2", "--cluster", "cluster1", "--service", "svc1"],
+        ["--region", "us-east-1", "--cluster", "cluster1", "--service", "svc1"],
       ],
       params: {
         owner: "owner",
         repo: "repo",
-        token: "token456",
-        title: "Cage audit report",
+        token: defaultInputs["github-token"],
+        title: defaultInputs["issue-title"],
         dryRun: false,
       },
     });
   });
 
-  it("should use default issue title when not provided", async () => {
-    mockInput({
-      region: "us-east-1",
-      "github-token": "token123",
-      "audit-contexts": "ctx1",
-      "issue-title": "",
-    });
-
-    await run();
-
-    expect(vi.mocked(audit)).toHaveBeenCalledWith(
-      expect.objectContaining({
-        params: expect.objectContaining({ title: "Cage audit report" }),
-      }),
-    );
-  });
-
   it("should include cage-options in audit arguments", async () => {
     mockInput({
-      region: "us-east-1",
-      "github-token": "token123",
+      ...defaultInputs,
       "audit-contexts": "ctx1",
       "cage-options": "--opt1\nvalue1\n--opt2\nvalue2",
     });
@@ -141,6 +127,7 @@ describe("run", () => {
       "github-token": "token123",
       "audit-contexts": "\n\n",
       "audit-services": "",
+      "issue-title": "Cage audit report",
     });
     await expect(run()).rejects.toThrow(
       "Either 'audit-contexts' or 'audit-services' input must be provided.",
