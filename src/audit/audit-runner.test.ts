@@ -135,6 +135,17 @@ describe("run", () => {
       },
     });
   });
+  it("should throw error when no audit targets found", async () => {
+    mockInput({
+      region: "us-east-1",
+      "github-token": "token123",
+      "audit-contexts": "\n\n",
+      "audit-services": "",
+    });
+    await expect(run()).rejects.toThrow(
+      "Either 'audit-contexts' or 'audit-services' input must be provided.",
+    );
+  });
 });
 
 describe("parseServiceInput", () => {

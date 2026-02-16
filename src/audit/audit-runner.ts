@@ -19,24 +19,22 @@ export async function run() {
     const [owner, repo] = [m[1], m[2]];
     return { owner, repo };
   })();
-  if (!auditContexts && !auditServices) {
+  const fullArgsList = Array.from(
+    iterateAuditTargets({
+      contexts: auditContexts,
+      services: auditServices,
+    }),
+  ).map(({ options, args }) => [
+    "--region",
+    region,
+    ...options,
+    ...parseListInput(cageOptions),
+    ...args,
+  ]);
+  if (fullArgsList.length === 0) {
     throw new Error(
       "Either 'audit-contexts' or 'audit-services' input must be provided.",
     );
-  }
-  const fullArgsList: string[][] = [];
-  for (const { options, args } of iterateAuditTargets({
-    contexts: auditContexts,
-    services: auditServices,
-  })) {
-    const fullArgs: string[] = [
-      "--region",
-      region,
-      ...options,
-      ...parseListInput(cageOptions),
-      ...args,
-    ];
-    fullArgsList.push(fullArgs);
   }
   await audit({
     argsList: fullArgsList,
