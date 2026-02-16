@@ -1,10 +1,8 @@
 import * as github from "@actions/github";
-import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ensureLabel, findIssueByTitle, upsertIssue } from "./audit-github";
-import { AuditResult } from "./types";
 
 vi.mock("@actions/github");
 
@@ -27,11 +25,6 @@ const makeMockOctokit = () => {
     },
     request: vi.fn(),
   };
-};
-
-const readSample = async (file: string): Promise<AuditResult> => {
-  const data = await readFile(resolve(file), "utf-8");
-  return JSON.parse(data) as AuditResult;
 };
 
 describe("ensureLabel", () => {
