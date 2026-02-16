@@ -5,9 +5,14 @@ import { readFile, writeFile } from "node:fs/promises";
 export async function release() {
   const version = core.getInput("version");
   if (!version) throw new Error("no version input");
-  const wsJson = await getExecOutput("npm", ["pkg", "get", "packages"]);
-  const packages = JSON.parse(wsJson.stdout) as string[];
-  await Promise.all(packages.map((pkg) => updatePackageJson(pkg, version)));
+  const wsJson = await getExecOutput("npm", [
+    "pkg",
+    "get",
+    "workspaces",
+    "--json",
+  ]);
+  const workspaces = JSON.parse(wsJson.stdout) as string[];
+  await Promise.all(workspaces.map((pkg) => updatePackageJson(pkg, version)));
   await exec("npm", ["publish", "--workspaces"]);
   core.info(`📦 package ${version} released!`);
 }

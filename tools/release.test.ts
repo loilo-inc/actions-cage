@@ -22,12 +22,18 @@ describe("release", () => {
     };
     vi.mocked(core.getInput).mockReturnValue("2.0.0");
     vi.mocked(getExecOutput).mockResolvedValue({
-      stdout: JSON.stringify(["packages/pkg-a", "packages/pkg-b"]),
+      stdout: '["packages/pkg-a","packages/pkg-b"]',
     } as any);
     vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockPackageJson));
 
     await release();
 
+    expect(getExecOutput).toHaveBeenCalledWith("npm", [
+      "pkg",
+      "get",
+      "workspaces",
+      "--json",
+    ]);
     expect(fs.readFile).toHaveBeenCalledTimes(2);
     expect(fs.writeFile).toHaveBeenCalledTimes(2);
     expect(exec).toHaveBeenCalledWith("npm", ["publish", "--workspaces"]);
