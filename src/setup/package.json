@@ -17,7 +17,7 @@
     "@actions/github": "^9",
     "@actions/io": "^2",
     "@actions/tool-cache": "^3",
-    "@loilo-inc/actions-cage": "0.0.0",
+    "@loilo-inc/actions-cage": "file://../util",
     "semver": "^7.6.2"
   }
 }
