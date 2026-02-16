@@ -1,5 +1,6 @@
 ignore:
   - packages/**/testdata/**
+  - .github/actions/**
 coverage:
   status:
     project: off

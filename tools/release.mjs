@@ -7,7 +7,7 @@ const resolve = (path) => new URL(path, import.meta.url).pathname;
 const packages = ["src/audit", "src/deploy", "src/setup", "src/util"];
 
 // GHAでGHPRにnpmリリースする
-export async function main() {
+export async function release() {
   let version = core.getInput("version");
   if (!version) throw new Error("no version input");
   for (const pkg of packages) {
@@ -22,8 +22,4 @@ export async function main() {
   }
   await exec("npm", ["publish", "--workspace"]);
   core.info(`📦 package ${version} released!`);
-}
-
-if (process.env.GITHUB_ACTIONS) {
-  main();
 }

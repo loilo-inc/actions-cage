@@ -2,20 +2,20 @@ import * as core from "@actions/core";
 import { exec } from "@actions/exec";
 import fs from "node:fs/promises";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { main } from "./release.mjs";
+import { release } from "./release.mjs";
 
 vi.mock("@actions/core");
 vi.mock("@actions/exec");
 vi.mock("node:fs/promises");
 
-describe("main", () => {
+describe("release", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("throws error when version input is missing", async () => {
     vi.mocked(core.getInput).mockReturnValue("");
-    await expect(main()).rejects.toThrow("no version input");
+    await expect(release()).rejects.toThrow("no version input");
   });
 
   it("updates package.json files with new version", async () => {
@@ -26,7 +26,7 @@ describe("main", () => {
     vi.mocked(fs.writeFile).mockResolvedValue(undefined);
     vi.mocked(exec).mockResolvedValue(0);
 
-    await main();
+    await release();
 
     expect(fs.readFile).toHaveBeenCalledTimes(4);
     expect(fs.writeFile).toHaveBeenCalledTimes(4);
@@ -40,7 +40,7 @@ describe("main", () => {
     vi.mocked(fs.writeFile).mockResolvedValue(undefined);
     vi.mocked(exec).mockResolvedValue(0);
 
-    await main();
+    await release();
 
     expect(exec).toHaveBeenCalledWith("npm", ["publish", "--workspace"]);
   });
@@ -53,7 +53,7 @@ describe("main", () => {
     vi.mocked(fs.writeFile).mockResolvedValue(undefined);
     vi.mocked(exec).mockResolvedValue(0);
 
-    await main();
+    await release();
 
     expect(core.info).toHaveBeenCalledWith("📦 package 2.0.0 released!");
   });

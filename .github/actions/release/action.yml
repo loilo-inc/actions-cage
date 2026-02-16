@@ -6,4 +6,4 @@ inputs:
     required: true
 runs:
   using: node24
-  main: tools/release.js
+  main: .github/actions/release/index.mjs
