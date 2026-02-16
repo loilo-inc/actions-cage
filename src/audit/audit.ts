@@ -1,30 +1,36 @@
 import * as core from "@actions/core";
 
 import { getOctokit } from "@actions/github";
-import { executeAudit } from "./audit-cage";
-import {
-  addIssueComment,
-  ensureIssue,
-  ensureLabel,
-  findIssueByTitle,
-} from "./audit-github";
-import { AuditIssueParams } from "./types";
+import { executeCageAudit } from "./audit-cage";
+import { findIssueByTitle, upsertIssue } from "./audit-github";
+import { renderAuditSummary } from "./markdown";
+import { AuditIssueParams, AuditResult } from "./types";
 
 export async function audit({
-  args,
+  argsList,
   params,
 }: {
-  args: string[];
+  argsList: string[][];
   params: AuditIssueParams;
 }): Promise<void> {
-  const result = await executeAudit(args);
-  const github = getOctokit(params.token);
-  const { owner, repo, title } = params;
-  const existing = await findIssueByTitle({ github, owner, repo, title });
-  if (result.summary.total_count === 0) {
+  const results: AuditResult[] = [];
+  for (const args of argsList) {
+    const result = await executeCageAudit(args);
+    results.push(result);
+  }
+  const allTotal = results.reduce((sum, r) => sum + r.summary.total_count, 0);
+  const { owner, repo, title, dryRun } = params;
+  if (allTotal === 0) {
     core.info(`No vulnerabilities found.`);
+    core.info(`Checking for existing issue to close...`);
+    if (dryRun) {
+      core.info(`Dry run: issue not closed.`);
+      return;
+    }
+    const github = getOctokit(params.token);
+    const existing = await findIssueByTitle({ github, owner, repo, title });
     if (existing) {
-      core.info(`Closing existing issue #${existing.number}.`);
+      core.info(`Existing issue found: #${existing.number}. Closing it...`);
       await github.rest.issues.update({
         owner,
         repo,
@@ -32,28 +38,21 @@ export async function audit({
         state: "closed",
         state_reason: "completed",
       });
+      core.info(`Issue #${existing.number} closed.`);
     } else {
       core.info(`No existing issue to close.`);
     }
     return;
   }
+  const body = renderAuditSummary(results);
+  if (dryRun) {
+    core.info(`Dry run: issue not created/updated.\n${body}`);
+    return;
+  }
+  const github = getOctokit(params.token);
   core.info(
     `Creating or updating issue '${params.title}' in ${params.owner}/${params.repo}`,
   );
-  await ensureLabel({
-    github,
-    owner: params.owner,
-    repo: params.repo,
-    name: "canarycage",
-  });
-  const updated = await ensureIssue({ github, params });
+  const updated = await upsertIssue({ github, params, body });
   core.info(`Issue ready: ${updated.html_url}`);
-  await addIssueComment({
-    github,
-    owner: params.owner,
-    repo: params.repo,
-    issueNumber: updated.number,
-    result,
-  });
-  core.info(`Comment added: #${updated.number}`);
 }

@@ -4,7 +4,23 @@ export function esc(text: string): string {
   return text.replace(/\|/g, "\\|").replace(/\r?\n/g, " ").replace(/`/g, "\\`");
 }
 
-export function renderAuditSummaryMarkdown(result: AuditResult): string {
+export function renderAuditSummary(results: AuditResult[]): string {
+  if (results.length === 0) {
+    return "## Scan Summary\n\nNo services were scanned.";
+  }
+  const lines = ["## Scan Summary"];
+  const totalVulns = results.reduce(
+    (acc, res) => acc + res.summary.total_count,
+    0,
+  );
+  lines.push(
+    `- Total **${totalVulns}** vulnerabilities found across **${results.length}** services.`,
+  );
+  lines.push(...results.map(renderAuditResult));
+  return lines.join("\n");
+}
+
+export function renderAuditResult(result: AuditResult): string {
   const {
     region,
     cluster,
@@ -13,7 +29,7 @@ export function renderAuditSummaryMarkdown(result: AuditResult): string {
     summary: { highest_severity },
   } = result;
   const lines = [
-    "## Scan Summary",
+    `## \`${esc(cluster)}\` / \`${esc(service)}\` (\`${esc(region)}\`)`,
     "| Region | Cluster | Service | Scanned At | Highest Severity |",
     "| --- | --- | --- | --- | --- |",
     `| \`${esc(region)}\` | \`${esc(cluster)}\` | \`${esc(service)}\` | \`${esc(scanned_at)}\` | \`${esc(highest_severity)}\` |`,
@@ -34,6 +50,7 @@ export function renderAuditSummaryMarkdown(result: AuditResult): string {
       ...vulnsHeader,
       ...vulnsRows,
       "</details>",
+      "",
     );
   }
   return lines.join("\n");
@@ -70,28 +87,4 @@ export function renderAlert(highest: Severity): string {
     "> [!TIP]",
     "> **Security Good News:** No vulnerabilities detected!",
   ].join("\n");
-}
-
-export function renderIssueBody(): string {
-  return [
-    "Cage audit report.",
-    "",
-    "Results are posted as comments per service.",
-  ].join("\n");
-}
-
-export function buildCommentMarker(
-  result: Pick<AuditResult, "service" | "cluster" | "region">,
-): string {
-  const sanitize = (s: string) => s.replace(/-->/g, "").trim();
-  const cluster = sanitize(result.cluster);
-  const region = sanitize(result.region);
-  const service = sanitize(result.service);
-  const sanitized = `region=${region};cluster=${cluster};service=${service}`;
-  return `<!-- cage-audit:${sanitized} -->`;
-}
-
-export function buildCommentBody(result: AuditResult): string {
-  const marker = buildCommentMarker(result);
-  return [marker, renderAuditSummaryMarkdown(result)].join("\n");
 }
