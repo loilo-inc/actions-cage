@@ -3,7 +3,7 @@ import { getOctokit } from "@actions/github";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { audit } from "./audit";
 import { executeCageAudit } from "./audit-cage";
-import { ensureLabel, findIssueByTitle, upsertIssue } from "./audit-github";
+import { findIssueByTitle, upsertIssue } from "./audit-github";
 import { renderAuditSummary } from "./markdown";
 import { AuditIssueParams } from "./types";
 
@@ -80,12 +80,6 @@ describe("audit", () => {
 
     await audit({ argsList: mockArgs, params: mockParams });
 
-    expect(ensureLabel).toHaveBeenCalledWith({
-      github: mockGithub,
-      owner: "test-owner",
-      repo: "test-repo",
-      name: "canarycage",
-    });
     expect(upsertIssue).toHaveBeenCalled();
     expect(core.info).toHaveBeenCalledWith(
       expect.stringContaining("Issue ready"),

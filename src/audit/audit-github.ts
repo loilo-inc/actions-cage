@@ -19,7 +19,7 @@ export async function findIssueByTitle({
   let page = 1;
   // Paginate through all matching issues to ensure we don't miss any beyond the first page.
   // Stop when we either find a matching issue or there are no more pages.
-  // We intentionally keep the existing filters (state, label, creator) to avoid changing behavior.
+  // We intentionally keep the existing filters (state, label) to avoid changing behavior.
   while (true) {
     const issuesResp = await github.rest.issues.listForRepo({
       owner,
@@ -83,8 +83,21 @@ export async function upsertIssue({
   const { owner, repo, title } = params;
   const existing = await findIssueByTitle({ github, owner, repo, title });
   if (existing) {
-    return existing;
+    const updated = await github.rest.issues.update({
+      owner,
+      repo,
+      issue_number: existing.number,
+      title,
+      body,
+    });
+    return updated.data;
   }
+  await ensureLabel({
+    github,
+    owner: params.owner,
+    repo: params.repo,
+    name: kLabelName,
+  });
   const created = await github.rest.issues.create({
     owner,
     repo,

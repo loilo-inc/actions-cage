@@ -2,7 +2,7 @@ import * as core from "@actions/core";
 
 import { getOctokit } from "@actions/github";
 import { executeCageAudit } from "./audit-cage";
-import { ensureLabel, findIssueByTitle, upsertIssue } from "./audit-github";
+import { findIssueByTitle, upsertIssue } from "./audit-github";
 import { renderAuditSummary } from "./markdown";
 import { AuditIssueParams, AuditResult } from "./types";
 
@@ -26,9 +26,10 @@ export async function audit({
     return;
   }
   const github = getOctokit(params.token);
-  const existing = await findIssueByTitle({ github, owner, repo, title });
   if (allTotal === 0) {
     core.info(`No vulnerabilities found.`);
+    core.info(`Checking for existing issue to close...`);
+    const existing = await findIssueByTitle({ github, owner, repo, title });
     if (existing) {
       core.info(`Closing existing issue #${existing.number}.`);
       await github.rest.issues.update({
@@ -46,12 +47,6 @@ export async function audit({
   core.info(
     `Creating or updating issue '${params.title}' in ${params.owner}/${params.repo}`,
   );
-  await ensureLabel({
-    github,
-    owner: params.owner,
-    repo: params.repo,
-    name: "canarycage",
-  });
   const updated = await upsertIssue({ github, params, body });
   core.info(`Issue ready: ${updated.html_url}`);
 }

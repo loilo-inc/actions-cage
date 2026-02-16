@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ensureLabel, findIssueByTitle } from "./audit-github";
+import { ensureLabel, findIssueByTitle, upsertIssue } from "./audit-github";
 import { AuditResult } from "./types";
 
 vi.mock("@actions/github");
@@ -236,8 +236,7 @@ describe("upsertIssue", () => {
     mockOctokit.rest.issues.listForRepo.mockResolvedValue({
       data: [existingIssue],
     });
-
-    const { upsertIssue } = await import("./audit-github");
+    mockOctokit.rest.issues.update.mockResolvedValue({ data: existingIssue });
     const result = await upsertIssue({
       github: mockOctokit as any,
       params: { owner: "o", repo: "r", title: "Test Issue", token: "t" },
@@ -257,7 +256,6 @@ describe("upsertIssue", () => {
     mockOctokit.rest.issues.listForRepo.mockResolvedValue({ data: [] });
     mockOctokit.rest.issues.create.mockResolvedValue({ data: newIssue });
 
-    const { upsertIssue } = await import("./audit-github");
     const result = await upsertIssue({
       github: mockOctokit as any,
       params: { owner: "o", repo: "r", title: "New Issue", token: "t" },
