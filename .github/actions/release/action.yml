@@ -9,4 +9,5 @@ runs:
   steps:
     - shell: bash
       run: npx tsx ./.github/actions/release/index.ts
-
+      env:
+        INPUT_VERSION: ${{ inputs.version }}
