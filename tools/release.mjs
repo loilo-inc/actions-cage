@@ -17,8 +17,11 @@ export async function updatePackageJson(pkg, version) {
     await readFile(`${pkg}/package.json`, "utf-8"),
   );
   packageJson["version"] = version;
-  if (packageJson["dependencies"]["@loilo-inc/actions-cage"]) {
+  if (packageJson["dependencies"]?.["@loilo-inc/actions-cage"]) {
     packageJson["dependencies"]["@loilo-inc/actions-cage"] = version;
   }
-  await writeFile(`${pkg}/package.json`, JSON.stringify(packageJson, null, 2));
+  await writeFile(
+    `${pkg}/package.json`,
+    JSON.stringify(packageJson, null, 2) + "\n",
+  );
 }

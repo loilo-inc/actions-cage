@@ -49,7 +49,7 @@ describe("updatePackageJson", () => {
 
     expect(fs.writeFile).toHaveBeenCalledWith(
       "src/test/package.json",
-      JSON.stringify({ ...mockPackageJson, version: "2.0.0" }, null, 2),
+      JSON.stringify({ ...mockPackageJson, version: "2.0.0" }, null, 2) + "\n",
     );
   });
 
@@ -73,7 +73,7 @@ describe("updatePackageJson", () => {
         },
         null,
         2,
-      ),
+      ) + "\n",
     );
   });
 
@@ -89,7 +89,7 @@ describe("updatePackageJson", () => {
 
     expect(fs.writeFile).toHaveBeenCalledWith(
       "src/test/package.json",
-      JSON.stringify({ ...mockPackageJson, version: "2.0.0" }, null, 2),
+      JSON.stringify({ ...mockPackageJson, version: "2.0.0" }, null, 2) + "\n",
     );
   });
 });
