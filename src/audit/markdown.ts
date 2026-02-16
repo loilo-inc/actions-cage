@@ -9,10 +9,14 @@ export function renderAuditSummary(results: AuditResult[]): string {
     return "## Scan Summary\n\nNo services were scanned.";
   }
   const lines = ["## Scan Summary"];
-  const totalVulns = results.reduce(
-    (acc, res) => acc + res.summary.total_count,
-    0,
-  );
+  // Count unique CVEs across all services
+  const uniqueCves = new Set<string>();
+  for (const result of results) {
+    for (const vuln of result.vulns) {
+      uniqueCves.add(vuln.cve.name);
+    }
+  }
+  const totalVulns = uniqueCves.size;
   lines.push(
     `- Total **${totalVulns}** vulnerabilities found across **${results.length}** services.`,
   );

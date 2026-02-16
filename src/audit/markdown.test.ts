@@ -193,6 +193,69 @@ describe("renderAuditSummary", () => {
       resolve("testdata/markdown-multiple-snapshot.md"),
     );
   });
+  it("counts unique CVEs when same CVE appears in multiple services", () => {
+    const result1: AuditResult = {
+      region: "us-east-1",
+      cluster: "cluster-1",
+      service: "service-1",
+      scanned_at: "2024-01-01",
+      summary: {
+        highest_severity: "CRITICAL",
+        critical_count: 1,
+        high_count: 0,
+        medium_count: 0,
+        low_count: 0,
+        info_count: 0,
+        total_count: 1,
+      },
+      vulns: [
+        {
+          cve: {
+            name: "CVE-2024-1234",
+            uri: "https://example.com/cve",
+            severity: "CRITICAL",
+            description: "Test vulnerability",
+            package_name: "openssl",
+            package_version: "1.0.0",
+          },
+          containers: ["container-1"],
+        },
+      ],
+    };
+    const result2: AuditResult = {
+      region: "us-west-1",
+      cluster: "cluster-2",
+      service: "service-2",
+      scanned_at: "2024-01-01",
+      summary: {
+        highest_severity: "CRITICAL",
+        critical_count: 1,
+        high_count: 0,
+        medium_count: 0,
+        low_count: 0,
+        info_count: 0,
+        total_count: 1,
+      },
+      vulns: [
+        {
+          cve: {
+            name: "CVE-2024-1234", // Same CVE as result1
+            uri: "https://example.com/cve",
+            severity: "CRITICAL",
+            description: "Test vulnerability",
+            package_name: "openssl",
+            package_version: "1.0.0",
+          },
+          containers: ["container-2"],
+        },
+      ],
+    };
+    const md = renderAuditSummary([result1, result2]);
+    // Should count CVE-2024-1234 only once, not twice
+    expect(md).toContain(
+      "Total **1** vulnerabilities found across **2** services",
+    );
+  });
 });
 
 describe("renderRow", () => {
