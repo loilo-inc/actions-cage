@@ -2,7 +2,7 @@ import * as core from "@actions/core";
 import { exec } from "@actions/exec";
 import * as fs from "node:fs/promises";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { release, updatePackageJson } from "./release.mjs";
+import { release, updatePackageJson } from "./release.js";
 vi.mock("@actions/exec");
 vi.mock("@actions/core");
 vi.mock("node:fs/promises");

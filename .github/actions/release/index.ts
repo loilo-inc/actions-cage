@@ -1,5 +1,5 @@
 import * as core from "@actions/core";
-import { release } from "../../../tools/release.mjs";
+import { release } from "../../../tools/release.js";
 
 try {
   await release();

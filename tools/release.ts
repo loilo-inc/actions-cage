@@ -12,7 +12,7 @@ export async function release() {
   core.info(`📦 package ${version} released!`);
 }
 
-export async function updatePackageJson(pkg, version) {
+export async function updatePackageJson(pkg: string, version: string) {
   const packageJson = JSON.parse(
     await readFile(`${pkg}/package.json`, "utf-8"),
   );
