@@ -35,7 +35,7 @@ export type AuditResult = {
   cluster: string;
   service: string;
   summary: AuditSummary;
-  vulns: AuditVuln[];
+  vulns: AuditVuln[] | null;
   scanned_at: string;
 };
 
