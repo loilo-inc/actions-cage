@@ -12,7 +12,8 @@ export function renderAuditSummary(results: AuditResult[]): string {
   // Count unique CVEs across all services
   const uniqueCves = new Set<string>();
   for (const result of results) {
-    for (const vuln of result.vulns) {
+    const vulns = result.vulns || [];
+    for (const vuln of vulns) {
       uniqueCves.add(vuln.cve.name);
     }
   }
@@ -40,12 +41,13 @@ export function renderAuditResult(result: AuditResult): string {
     renderAlert(highest_severity),
     "",
   ];
-  if (result.vulns.length > 0) {
+  const vulns = result.vulns || [];
+  if (vulns.length > 0) {
     const vulnsHeader = [
       "| Severity | CVE | Package | Version | Containers |",
       "| --- | --- | --- | --- | --- |",
     ];
-    const vulnsRows = result.vulns.sort(sortVulnsBySeverity).map(renderRow);
+    const vulnsRows = vulns.sort(sortVulnsBySeverity).map(renderRow);
     lines.push(
       `### Vulnerabilities (${result.summary.total_count})`,
       "<details>",
