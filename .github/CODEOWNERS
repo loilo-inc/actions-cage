@@ -1,0 +1,4 @@
+# CODEOWNERS file for actions-cage repository
+
+# Package.json maintenance
+/package.json @loilo-inc/oss-maintainer-js
