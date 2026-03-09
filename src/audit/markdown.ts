@@ -29,10 +29,10 @@ export function renderAuditSummary(results: AuditResult[]): string {
   const withVulns = results.filter((r) => (r.vulns || []).length > 0);
   const withoutVulns = results.filter((r) => (r.vulns || []).length === 0);
   if (withoutVulns.length > 0) {
-    const serviceList = withoutVulns
-      .map(renderServiceLabel)
-      .join(", ");
-    lines.push(`- Services with no vulnerabilities: ${serviceList}`);
+    lines.push(`- Services with no vulnerabilities:`);
+    for (const r of withoutVulns) {
+      lines.push(`  - ${renderServiceLabel(r)}`);
+    }
   }
   lines.push(...withVulns.map(renderAuditResult));
   return lines.join("\n");
