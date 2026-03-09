@@ -4,6 +4,11 @@ export function esc(text: string): string {
   return text.replace(/\|/g, "\\|").replace(/\r?\n/g, " ").replace(/`/g, "\\`");
 }
 
+export function renderServiceLabel(result: AuditResult): string {
+  const { region, cluster, service } = result;
+  return `\`${esc(cluster)}\` / \`${esc(service)}\` (\`${esc(region)}\`)`;
+}
+
 export function renderAuditSummary(results: AuditResult[]): string {
   if (results.length === 0) {
     return "## Scan Summary\n\nNo services were scanned.";
@@ -21,7 +26,15 @@ export function renderAuditSummary(results: AuditResult[]): string {
   lines.push(
     `- Total **${totalVulns}** vulnerabilities found across **${results.length}** services.`,
   );
-  lines.push(...results.map(renderAuditResult));
+  const withVulns = results.filter((r) => (r.vulns || []).length > 0);
+  const withoutVulns = results.filter((r) => (r.vulns || []).length === 0);
+  if (withoutVulns.length > 0) {
+    const serviceList = withoutVulns
+      .map(renderServiceLabel)
+      .join(", ");
+    lines.push(`- Services with no vulnerabilities: ${serviceList}`);
+  }
+  lines.push(...withVulns.map(renderAuditResult));
   return lines.join("\n");
 }
 
@@ -34,7 +47,7 @@ export function renderAuditResult(result: AuditResult): string {
     summary: { highest_severity },
   } = result;
   const lines = [
-    `## \`${esc(cluster)}\` / \`${esc(service)}\` (\`${esc(region)}\`)`,
+    `## ${renderServiceLabel(result)}`,
     "| Region | Cluster | Service | Scanned At | Highest Severity |",
     "| --- | --- | --- | --- | --- |",
     `| \`${esc(region)}\` | \`${esc(cluster)}\` | \`${esc(service)}\` | \`${esc(scanned_at)}\` | \`${esc(highest_severity)}\` |`,
