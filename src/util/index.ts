@@ -19,3 +19,19 @@ export function parseListInput(input: string): string[] {
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
 }
+
+// %s => string
+export function sprintf(
+  template: string,
+  ...args: (number | string)[]
+): string {
+  return template.replace(/%s/g, () => String(args.shift() ?? ""));
+}
+
+export function prularize(
+  count: number,
+  singular: string,
+  plural = singular + "s",
+): string {
+  return `${count} ${count === 1 ? singular : plural}`;
+}

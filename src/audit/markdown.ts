@@ -1,3 +1,4 @@
+import { prularize, sprintf } from "@loilo-inc/actions-cage";
 import { AuditResult, AuditVuln, Severity, sortVulnsBySeverity } from "./types";
 
 export function esc(text: string): string {
@@ -28,10 +29,15 @@ export function renderAuditSummary(results: AuditResult[]): string {
   }
   const withVulns = results.filter((r) => (r.vulns || []).length > 0);
   const withoutVulns = results.filter((r) => (r.vulns || []).length === 0);
-  const totalVulns = uniqueCves.size;
-  const vulnServices = withVulns.length;
   lines.push(
-    `- Total **${totalVulns}** unique CVE(s) found across **${vulnServices}** of **${results.length}** services.`,
+    sprintf(
+      "- Total **%s** unique %s found across **%s** of **%s** %s.",
+      uniqueCves.size,
+      prularize(uniqueCves.size, "CVE"),
+      withVulns.length,
+      results.length,
+      prularize(results.length, "service"),
+    ),
   );
   if (withoutVulns.length > 0) {
     lines.push(`- Services with no vulnerabilities:`);
