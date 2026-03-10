@@ -4,7 +4,7 @@ import {
   assertInput,
   boolify,
   parseListInput,
-  prularize,
+  pluralize,
   sprintf,
 } from "./index";
 
@@ -113,45 +113,45 @@ describe("sprintf", () => {
     expect(result).toBe("Only this");
   });
 
-  it("should leave unreplaced %s when no arguments provided", () => {
+  it("should replace %s with empty strings when no arguments are provided", () => {
     const result = sprintf("Missing %s and %s");
     expect(result).toBe("Missing  and ");
   });
 });
 
-describe("prularize", () => {
+describe("pluralize", () => {
   it("should return singular form when count is 1", () => {
-    const result = prularize(1, "item");
-    expect(result).toBe("1 item");
+    const result = pluralize(1, "item");
+    expect(result).toBe("item");
   });
 
   it("should return plural form when count is 0", () => {
-    const result = prularize(0, "item");
-    expect(result).toBe("0 items");
+    const result = pluralize(0, "item");
+    expect(result).toBe("items");
   });
 
   it("should return plural form when count is greater than 1", () => {
-    const result = prularize(5, "item");
-    expect(result).toBe("5 items");
+    const result = pluralize(5, "item");
+    expect(result).toBe("items");
   });
 
   it("should use custom plural form when provided", () => {
-    const result = prularize(2, "person", "people");
-    expect(result).toBe("2 people");
+    const result = pluralize(2, "person", "people");
+    expect(result).toBe("people");
   });
 
   it("should use custom plural form with singular count", () => {
-    const result = prularize(1, "person", "people");
-    expect(result).toBe("1 person");
+    const result = pluralize(1, "person", "people");
+    expect(result).toBe("person");
   });
 
   it("should handle large numbers", () => {
-    const result = prularize(1000, "file");
-    expect(result).toBe("1000 files");
+    const result = pluralize(1000, "file");
+    expect(result).toBe("files");
   });
 
   it("should handle negative numbers as plural", () => {
-    const result = prularize(-5, "error");
-    expect(result).toBe("-5 errors");
+    const result = pluralize(-5, "error");
+    expect(result).toBe("errors");
   });
 });

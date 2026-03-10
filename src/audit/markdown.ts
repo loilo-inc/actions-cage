@@ -1,4 +1,4 @@
-import { prularize, sprintf } from "@loilo-inc/actions-cage";
+import { pluralize, sprintf } from "@loilo-inc/actions-cage";
 import { AuditResult, AuditVuln, Severity, sortVulnsBySeverity } from "./types";
 
 export function esc(text: string): string {
@@ -33,10 +33,10 @@ export function renderAuditSummary(results: AuditResult[]): string {
     sprintf(
       "- Total **%s** unique %s found across **%s** of **%s** %s.",
       uniqueCves.size,
-      prularize(uniqueCves.size, "CVE"),
+      pluralize(uniqueCves.size, "CVE"),
       withVulns.length,
       results.length,
-      prularize(results.length, "service"),
+      pluralize(results.length, "service"),
     ),
   );
   if (withoutVulns.length > 0) {
