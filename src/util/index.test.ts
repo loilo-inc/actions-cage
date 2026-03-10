@@ -1,12 +1,6 @@
 import * as core from "@actions/core";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  assertInput,
-  boolify,
-  parseListInput,
-  pluralize,
-  sprintf,
-} from "./index";
+import { assertInput, boolify, parseListInput, pluralize } from "./index";
 
 vi.mock("@actions/core");
 
@@ -74,48 +68,6 @@ describe("parseListInput", () => {
   it("should handle mixed line separators", () => {
     const result = parseListInput("item1\nitem2\r\nitem3\r\nitem4");
     expect(result).toEqual(["item1", "item2", "item3", "item4"]);
-  });
-});
-
-describe("sprintf", () => {
-  it("should replace %s with string arguments", () => {
-    const result = sprintf("Hello %s", "world");
-    expect(result).toBe("Hello world");
-  });
-
-  it("should replace multiple %s placeholders", () => {
-    const result = sprintf("%s %s %s", "foo", "bar", "baz");
-    expect(result).toBe("foo bar baz");
-  });
-
-  it("should replace %s with number arguments", () => {
-    const result = sprintf("Count: %s", 42);
-    expect(result).toBe("Count: 42");
-  });
-
-  it("should handle mixed string and number arguments", () => {
-    const result = sprintf("%s has %s items", "Alice", 5);
-    expect(result).toBe("Alice has 5 items");
-  });
-
-  it("should return template unchanged when no %s placeholders", () => {
-    const result = sprintf("no placeholders here");
-    expect(result).toBe("no placeholders here");
-  });
-
-  it("should handle empty string arguments", () => {
-    const result = sprintf("Value: %s", "");
-    expect(result).toBe("Value: ");
-  });
-
-  it("should ignore extra arguments", () => {
-    const result = sprintf("Only %s", "this", "ignored", "too");
-    expect(result).toBe("Only this");
-  });
-
-  it("should replace %s with empty strings when no arguments are provided", () => {
-    const result = sprintf("Missing %s and %s");
-    expect(result).toBe("Missing  and ");
   });
 });
 

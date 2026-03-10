@@ -20,19 +20,6 @@ export function parseListInput(input: string): string[] {
     .filter((s) => s.length > 0);
 }
 
-// Simple sprintf implementation that only supports %s
-export function sprintf(
-  template: string,
-  ...args: (number | string)[]
-): string {
-  let index = 0;
-  return template.replace(/%s/g, () => {
-    const value = args[index];
-    index += 1;
-    return String(value ?? "");
-  });
-}
-
 export function pluralize(
   count: number,
   singular: string,

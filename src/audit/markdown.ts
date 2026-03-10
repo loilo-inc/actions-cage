@@ -1,4 +1,5 @@
-import { pluralize, sprintf } from "@loilo-inc/actions-cage";
+import { pluralize } from "@loilo-inc/actions-cage";
+import { format } from "node:util";
 import { AuditResult, AuditVuln, Severity, sortVulnsBySeverity } from "./types";
 
 export function esc(text: string): string {
@@ -30,7 +31,7 @@ export function renderAuditSummary(results: AuditResult[]): string {
   const withVulns = results.filter((r) => (r.vulns || []).length > 0);
   const withoutVulns = results.filter((r) => (r.vulns || []).length === 0);
   lines.push(
-    sprintf(
+    format(
       "- Total **%s** unique %s found across **%s** of **%s** %s.",
       uniqueCves.size,
       pluralize(uniqueCves.size, "CVE"),
