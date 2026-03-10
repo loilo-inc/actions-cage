@@ -22,12 +22,17 @@ export function renderAuditSummary(results: AuditResult[]): string {
       uniqueCves.add(vuln.cve.name);
     }
   }
-  const totalVulns = uniqueCves.size;
-  lines.push(
-    `- Total **${totalVulns}** vulnerabilities found across **${results.length}** services.`,
-  );
+  if (uniqueCves.size === 0) {
+    lines.push("- No vulnerabilities found in any services.");
+    return lines.join("\n");
+  }
   const withVulns = results.filter((r) => (r.vulns || []).length > 0);
   const withoutVulns = results.filter((r) => (r.vulns || []).length === 0);
+  const totalVulns = uniqueCves.size;
+  const vulnServices = withVulns.length;
+  lines.push(
+    `- Total **${totalVulns}** unique CVE(s) found across **${vulnServices}** of **${results.length}** services.`,
+  );
   if (withoutVulns.length > 0) {
     lines.push(`- Services with no vulnerabilities:`);
     for (const r of withoutVulns) {
