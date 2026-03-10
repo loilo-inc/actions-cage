@@ -1,5 +1,5 @@
 ## Scan Summary
-- Total **2** vulnerabilities found across **1** services.
+- Total **2** unique CVEs found across **1** of **1** service.
 ## `example-cluster` / `example-service` (`us-west-2`)
 | Region | Cluster | Service | Scanned At | Highest Severity |
 | --- | --- | --- | --- | --- |

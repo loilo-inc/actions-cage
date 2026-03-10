@@ -253,7 +253,7 @@ describe("renderAuditSummary", () => {
     const md = renderAuditSummary([result1, result2]);
     // Should count CVE-2024-1234 only once, not twice
     expect(md).toContain(
-      "Total **1** vulnerabilities found across **2** services",
+      "Total **1** unique CVE found across **2** of **2** services",
     );
   });
   it("counts unique CVEs with mix of duplicates and unique vulnerabilities", () => {
@@ -356,7 +356,7 @@ describe("renderAuditSummary", () => {
     // Should count unique CVEs: CVE-2024-1234 (appears in result1 and result2), CVE-2024-5678 (in result1), CVE-2024-9999 (in result3)
     // Total = 3 unique CVEs across 3 services (not 2+1+1=4)
     expect(md).toContain(
-      "Total **3** vulnerabilities found across **3** services",
+      "Total **3** unique CVEs found across **3** of **3** services",
     );
   });
 });

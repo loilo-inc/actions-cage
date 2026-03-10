@@ -1,3 +1,5 @@
+import { pluralize } from "@loilo-inc/actions-cage";
+import { format } from "node:util";
 import { AuditResult, AuditVuln, Severity, sortVulnsBySeverity } from "./types";
 
 export function esc(text: string): string {
@@ -22,12 +24,22 @@ export function renderAuditSummary(results: AuditResult[]): string {
       uniqueCves.add(vuln.cve.name);
     }
   }
-  const totalVulns = uniqueCves.size;
-  lines.push(
-    `- Total **${totalVulns}** vulnerabilities found across **${results.length}** services.`,
-  );
+  if (uniqueCves.size === 0) {
+    lines.push("- No vulnerabilities found in any services.");
+    return lines.join("\n");
+  }
   const withVulns = results.filter((r) => (r.vulns || []).length > 0);
   const withoutVulns = results.filter((r) => (r.vulns || []).length === 0);
+  lines.push(
+    format(
+      "- Total **%s** unique %s found across **%s** of **%s** %s.",
+      uniqueCves.size,
+      pluralize(uniqueCves.size, "CVE"),
+      withVulns.length,
+      results.length,
+      pluralize(results.length, "service"),
+    ),
+  );
   if (withoutVulns.length > 0) {
     lines.push(`- Services with no vulnerabilities:`);
     for (const r of withoutVulns) {

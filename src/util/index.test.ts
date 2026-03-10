@@ -1,6 +1,6 @@
 import * as core from "@actions/core";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { assertInput, boolify, parseListInput } from "./index";
+import { assertInput, boolify, parseListInput, pluralize } from "./index";
 
 vi.mock("@actions/core");
 
@@ -68,5 +68,42 @@ describe("parseListInput", () => {
   it("should handle mixed line separators", () => {
     const result = parseListInput("item1\nitem2\r\nitem3\r\nitem4");
     expect(result).toEqual(["item1", "item2", "item3", "item4"]);
+  });
+});
+
+describe("pluralize", () => {
+  it("should return singular form when count is 1", () => {
+    const result = pluralize(1, "item");
+    expect(result).toBe("item");
+  });
+
+  it("should return plural form when count is 0", () => {
+    const result = pluralize(0, "item");
+    expect(result).toBe("items");
+  });
+
+  it("should return plural form when count is greater than 1", () => {
+    const result = pluralize(5, "item");
+    expect(result).toBe("items");
+  });
+
+  it("should use custom plural form when provided", () => {
+    const result = pluralize(2, "person", "people");
+    expect(result).toBe("people");
+  });
+
+  it("should use custom plural form with singular count", () => {
+    const result = pluralize(1, "person", "people");
+    expect(result).toBe("person");
+  });
+
+  it("should handle large numbers", () => {
+    const result = pluralize(1000, "file");
+    expect(result).toBe("files");
+  });
+
+  it("should handle negative numbers as plural", () => {
+    const result = pluralize(-5, "error");
+    expect(result).toBe("errors");
   });
 });

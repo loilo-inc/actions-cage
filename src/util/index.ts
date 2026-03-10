@@ -19,3 +19,11 @@ export function parseListInput(input: string): string[] {
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
 }
+
+export function pluralize(
+  count: number,
+  singular: string,
+  plural = singular + "s",
+): string {
+  return `${count === 1 ? singular : plural}`;
+}
