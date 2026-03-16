@@ -6,8 +6,7 @@
   "workspaces": [
     "src/setup",
     "src/deploy",
-    "src/audit",
-    "src/util"
+    "src/audit"
   ],
   "scripts": {
     "fmt": "prettier --write '**/*.ts'",

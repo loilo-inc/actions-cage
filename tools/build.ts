@@ -1,9 +1,8 @@
 import { build } from "esbuild";
 import { copyFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
-const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const rootDir = path.resolve(import.meta.dirname, "..");
 const buildDir = path.join(rootDir, "build");
 const actionConfigs = [
   {
@@ -24,7 +23,7 @@ const actionConfigs = [
     manifestPath: path.join(rootDir, "src/audit/package.json"),
     actionPath: path.join(rootDir, "src/audit/action.yml"),
   },
-];
+] as const;
 
 await main();
 
@@ -37,7 +36,7 @@ async function main() {
   }
 }
 
-function parseVersionArg(args) {
+function parseVersionArg(args: string[]): string | undefined {
   for (let i = 0; i < args.length; i += 1) {
     if (args[i] === "--version") {
       return args[i + 1];
@@ -46,7 +45,10 @@ function parseVersionArg(args) {
   return undefined;
 }
 
-async function packageAction(config, version) {
+async function packageAction(
+  config: (typeof actionConfigs)[number],
+  version: string,
+) {
   const outDir = path.join(buildDir, config.id);
   const libDir = path.join(outDir, "lib");
   await mkdir(libDir, { recursive: true });
@@ -58,7 +60,7 @@ async function packageAction(config, version) {
     format: "esm",
     outfile: path.join(libDir, "index.js"),
     platform: "node",
-    sourcemap: false,
+    sourcemap: true,
     target: "node24",
   });
 
@@ -72,8 +74,17 @@ async function packageAction(config, version) {
   );
 }
 
-async function createPublishManifest(manifestPath, version) {
-  const source = JSON.parse(await readFile(manifestPath, "utf-8"));
+async function createPublishManifest(manifestPath: string, version: string) {
+  const source = JSON.parse(await readFile(manifestPath, "utf-8")) as {
+    name: string;
+    version: string;
+    license?: string;
+    author?: string;
+    bugs?: unknown;
+    homepage?: string;
+    publishConfig?: Record<string, unknown>;
+    repository?: unknown;
+  };
   return {
     name: source.name,
     version,
@@ -85,6 +96,6 @@ async function createPublishManifest(manifestPath, version) {
     main: "./lib/index.js",
     publishConfig: source.publishConfig,
     repository: source.repository,
-    type: "module",
+    type: "module" as const,
   };
 }
