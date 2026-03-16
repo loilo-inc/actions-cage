@@ -19,7 +19,6 @@ jobs:
           registry-url: "https://npm.pkg.github.com/"
           scope: "@loilo-inc"
       - run: npm ci
-      - run: npm run build
       - uses: ./.github/actions/release
         with:
           version: ${{ github.ref_name }}

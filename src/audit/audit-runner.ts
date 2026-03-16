@@ -1,5 +1,5 @@
 import * as core from "@actions/core";
-import { assertInput, boolify, parseListInput } from "@loilo-inc/actions-cage";
+import { assertInput, boolify, parseListInput } from "../util";
 import { audit } from "./audit";
 
 export async function run() {

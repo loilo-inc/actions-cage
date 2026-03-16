@@ -13,24 +13,18 @@
     "fmt": "prettier --write '**/*.ts'",
     "fmtcheck": "prettier --check '**/*.ts'",
     "test": "vitest run",
-    "build": "tsc -b",
+    "build": "make build",
+    "clean": "make clean",
     "testci": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=json --coverage.reportsDirectory=coverage"
-  },
-  "dependencies": {
-    "@actions/core": "^2",
-    "@actions/exec": "^1",
-    "@actions/github": "^9",
-    "@actions/io": "^2",
-    "@actions/tool-cache": "^3",
-    "semver": "^7.6.2"
   },
   "devDependencies": {
     "@types/node": "^24",
     "@types/semver": "^7.5.8",
     "@vitest/coverage-v8": "^4.0.18",
+    "esbuild": "^0.27.4",
     "prettier": "^3",
+    "tsx": "^4.21.0",
     "typescript": "^5",
-    "vitest": "^4.0.16",
-    "tsx": "^4.21.0"
+    "vitest": "^4.0.16"
   }
 }

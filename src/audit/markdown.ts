@@ -1,4 +1,4 @@
-import { pluralize } from "@loilo-inc/actions-cage";
+import { pluralize } from "../util";
 import { format } from "node:util";
 import { AuditResult, AuditVuln, Severity, sortVulnsBySeverity } from "./types";
 
