@@ -15,7 +15,6 @@
   "dependencies": {
     "@actions/core": "^2",
     "@actions/exec": "^1",
-    "@actions/github": "^9",
-    "@loilo-inc/actions-cage": "0.0.0"
+    "@actions/github": "^9"
   }
 }
