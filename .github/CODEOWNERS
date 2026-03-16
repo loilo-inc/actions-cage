@@ -2,3 +2,6 @@
 
 # Package.json maintenance
 /package.json @loilo-inc/oss-maintainer-js
+/package-lock.json @loilo-inc/oss-maintainer-js
+/.github/workflows @loilo-inc/oss-maintainer-js
+
