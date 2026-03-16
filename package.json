@@ -11,6 +11,13 @@
     "clean": "rm -rf build",
     "testci": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=json --coverage.reportsDirectory=coverage"
   },
+  "dependencies": {
+    "@actions/core": "^2",
+    "@actions/exec": "^1",
+    "@actions/github": "^9",
+    "@actions/tool-cache": "^3",
+    "semver": "^7.7.4"
+  },
   "devDependencies": {
     "@types/node": "^24",
     "@types/semver": "^7.5.8",
