@@ -3,17 +3,12 @@
   "private": true,
   "license": "MIT",
   "type": "module",
-  "workspaces": [
-    "src/setup",
-    "src/deploy",
-    "src/audit"
-  ],
   "scripts": {
     "fmt": "prettier --write '**/*.ts'",
     "fmtcheck": "prettier --check '**/*.ts'",
     "test": "vitest run",
-    "build": "make build",
-    "clean": "make clean",
+    "build": "tsx tools/build.ts",
+    "clean": "rm -rf build",
     "testci": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=json --coverage.reportsDirectory=coverage"
   },
   "devDependencies": {

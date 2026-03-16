@@ -1,8 +1,13 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./src/setup" },
-    { "path": "./src/deploy" },
-    { "path": "./src/audit" }
-  ]
+  "compilerOptions": {
+    "module": "es2022",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "target": "es2022",
+    "strict": true,
+    "declaration": true,
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "noUnusedLocals": true
+  }
 }
