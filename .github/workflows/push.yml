@@ -17,6 +17,8 @@ jobs:
       - run: npm run fmtcheck
       - run: npx tsc
       - run: npm run testci
+      - run: npm run build
+      - run: node tools/check-bundle.cjs
       - uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
