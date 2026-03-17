@@ -28,4 +28,4 @@ inputs:
     required: false
 runs:
   using: node24
-  main: lib/index.js
+  main: lib/index.cjs
