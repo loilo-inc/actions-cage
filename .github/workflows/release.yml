@@ -23,24 +23,6 @@ jobs:
         run: |
           npx tsx tools/main.ts build --version ${{ github.ref_name }}
       - name: Publish (dry-run)
-        strategy:
-          matrix:
-            package:
-              [
-                "actions-setup-cage",
-                "actions-deploy-cage",
-                "actions-audit-cage",
-              ]
-        run: |
-          npm publish ./build/@loilo-inc/${{ matrix.package }} --dry-run
+        run: ./tools/publish.sh --dry-run
       - name: Publish
-        strategy:
-          matrix:
-            package:
-              [
-                "actions-setup-cage",
-                "actions-deploy-cage",
-                "actions-audit-cage",
-              ]
-        run: |
-          npm publish ./build/@loilo-inc/${{ matrix.package }}
+        run: ./tools/publish.sh
