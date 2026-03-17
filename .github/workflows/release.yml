@@ -24,4 +24,4 @@ jobs:
           npx tsx tools/main.ts build --version ${{ github.ref_name }}
       - name: Publish
         run: |
-          npm publish ./build/* --access public
+          npm publish ./build/@loilo-inc/* --access public
