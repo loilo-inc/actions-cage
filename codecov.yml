@@ -1,6 +1,7 @@
 ignore:
   - packages/**/testdata/**
   - .github/actions/**
+  - tools/main.ts
 coverage:
   status:
     project: off

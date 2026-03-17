@@ -1,0 +1,12 @@
+{
+  "name": "${name}",
+  "version": "${version}",
+  "license": "MIT",
+  "type": "module",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "files": ["lib", "LICENSE", "action.yml"],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  }
+}
