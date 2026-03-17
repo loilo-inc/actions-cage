@@ -22,6 +22,7 @@ jobs:
       - name: Build
         run: |
           npx tsx tools/main.ts build --version ${{ github.ref_name }}
+      - name: Publish (dry-run)
+        run: ./tools/publish.sh --dry-run
       - name: Publish
-        run: |
-          npm publish ./build/@loilo-inc/* --access public
+        run: ./tools/publish.sh
