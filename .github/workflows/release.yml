@@ -21,7 +21,7 @@ jobs:
       - run: npm ci
       - name: Build
         run: |
-          npx tsx tools/build.ts --version ${{ github.ref_name }}
+          npx tsx tools/main.ts build --version ${{ github.ref_name }}
       - name: Publish
         run: |
           npm publish ./build/* --access public

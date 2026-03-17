@@ -1,3 +1,3 @@
-import { run } from "../../src/deploy/deploy-runner";
+import { deploy } from "../../src";
 
-await run();
+await deploy();

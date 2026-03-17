@@ -1,3 +1,3 @@
-import { run } from "../../src/setup/setup-runner";
+import { setup } from "../../src";
 
-await run();
+await setup();

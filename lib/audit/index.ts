@@ -1,3 +1,3 @@
-import { run } from "../../src/audit/audit-runner";
+import { audit } from "../../src";
 
-await run();
+await audit();

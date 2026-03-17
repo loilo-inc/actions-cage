@@ -2,7 +2,7 @@ import fs from "fs/promises";
 import os from "os";
 import path from "path";
 import { describe, expect, test } from "vitest";
-import { main } from "./build";
+import { build } from "./build";
 
 describe("build", () => {
   test("should build and copy files for each action config", async (t) => {
@@ -10,7 +10,7 @@ describe("build", () => {
       path.join(os.tmpdir(), "actions-cage-build-test-"),
     );
     t.onTestFinished(() => fs.rm(buildDir, { recursive: true, force: true }));
-    await main({ version: "0.0.0-test", buildDir });
+    await build({ version: "0.0.0-test", buildDir });
     const makeExpectedFiles = (actionName: string) => ({
       name: actionName,
       files: [

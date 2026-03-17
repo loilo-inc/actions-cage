@@ -1,7 +1,6 @@
-import { build } from "esbuild";
+import * as esbuild from "esbuild";
 import { copyFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { parseArgs } from "node:util";
 
 const rootDir = path.resolve(import.meta.dirname, "..");
 
@@ -42,7 +41,7 @@ async function packageAction({
   const libDir = path.join(outDir, "lib");
   await mkdir(libDir, { recursive: true });
   await Promise.all([
-    build({
+    esbuild.build({
       absWorkingDir: rootDir,
       bundle: true,
       entryPoints: [config.entryPoint],
@@ -83,7 +82,7 @@ async function createPublishManifest({
   );
 }
 
-export async function main({
+export async function build({
   buildDir = path.join(rootDir, "build"),
   version,
 }: {
@@ -95,11 +94,4 @@ export async function main({
   await Promise.all(
     actionConfigs.map((config) => packageAction({ buildDir, config, version })),
   );
-}
-
-if (import.meta.main) {
-  const version = parseArgs({
-    options: { version: { type: "string", default: "0.0.0" } },
-  }).values.version;
-  await main({ version });
 }
