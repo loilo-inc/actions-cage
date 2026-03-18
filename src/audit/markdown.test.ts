@@ -522,7 +522,7 @@ describe("renderAlert", () => {
     const alert = renderAlert("LOW");
     expect(alert).toContain("> [!INFO]");
     expect(alert).toContain(
-      "> **Security Info:** No Critical or High severity vulnerabilities detected.",
+      "> **Security Info:** Informational vulnerabilities detected. Please review at your convenience.",
     );
   });
 
@@ -530,15 +530,15 @@ describe("renderAlert", () => {
     const alert = renderAlert("INFORMATIONAL");
     expect(alert).toContain("> [!INFO]");
     expect(alert).toContain(
-      "> **Security Info:** No Critical or High severity vulnerabilities detected.",
+      "> **Security Info:** Informational vulnerabilities detected. Please review at your convenience.",
     );
   });
 
-  it("should render tip alert for UNDEFINED severity", () => {
+  it("should render info alert for UNDEFINED severity", () => {
     const alert = renderAlert("UNDEFINED");
-    expect(alert).toContain("> [!TIP]");
+    expect(alert).toContain("> [!INFO]");
     expect(alert).toContain(
-      "> **Security Good News:** No vulnerabilities detected!",
+      "> **Security Info:** Informational vulnerabilities detected. Please review at your convenience.",
     );
   });
 
