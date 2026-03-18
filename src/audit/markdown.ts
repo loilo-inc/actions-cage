@@ -1,5 +1,5 @@
-import { pluralize } from "../util";
 import { format } from "node:util";
+import { pluralize } from "../util";
 import { AuditResult, AuditVuln, Severity, sortVulnsBySeverity } from "./types";
 
 export function esc(text: string): string {
@@ -108,14 +108,9 @@ export function renderAlert(highest: Severity): string {
       "> [!WARNING]",
       "> **Security Notice:** Medium severity vulnerabilities detected. Please review and address them promptly.",
     ].join("\n");
-  } else if (highest === "LOW" || highest === "INFORMATIONAL") {
-    return [
-      "> [!INFO]",
-      "> **Security Info:** No Critical or High severity vulnerabilities detected.",
-    ].join("\n");
   }
   return [
-    "> [!TIP]",
-    "> **Security Good News:** No vulnerabilities detected!",
+    "> [!INFO]",
+    "> **Security Info:** Informational vulnerabilities detected. Please review at your convenience.",
   ].join("\n");
 }
