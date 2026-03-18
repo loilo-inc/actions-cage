@@ -14,8 +14,8 @@ describe("build", () => {
     const makeExpectedFiles = (actionName: string) => ({
       name: actionName,
       files: [
-        path.join(buildDir, actionName, "lib", "index.js"),
-        path.join(buildDir, actionName, "lib", "index.js.map"),
+        path.join(buildDir, actionName, "lib", "index.cjs"),
+        path.join(buildDir, actionName, "lib", "index.cjs.map"),
         path.join(buildDir, actionName, "action.yml"),
         path.join(buildDir, actionName, "LICENSE"),
         path.join(buildDir, actionName, "package.json"),
@@ -37,6 +37,8 @@ describe("build", () => {
       const packageJson = JSON.parse(
         await fs.readFile(packageJsonFile as string, "utf-8"),
       );
+      // ensure CJS
+      expect(packageJson.type).toBeUndefined();
       expect(packageJson.name).toBe(name);
       expect(packageJson.version).toBe("0.0.0-test");
     }

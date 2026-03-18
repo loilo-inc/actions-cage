@@ -13,17 +13,17 @@ type ActionConfig = {
 const actionConfigs: ActionConfig[] = [
   {
     name: "@loilo-inc/actions-setup-cage",
-    entryPoint: path.join(rootDir, "lib/setup/index.ts"),
+    entryPoint: path.join(rootDir, "lib/setup/index.cts"),
     actionPath: path.join(rootDir, "lib/setup/action.yml"),
   },
   {
     name: "@loilo-inc/actions-deploy-cage",
-    entryPoint: path.join(rootDir, "lib/deploy/index.ts"),
+    entryPoint: path.join(rootDir, "lib/deploy/index.cts"),
     actionPath: path.join(rootDir, "lib/deploy/action.yml"),
   },
   {
     name: "@loilo-inc/actions-audit-cage",
-    entryPoint: path.join(rootDir, "lib/audit/index.ts"),
+    entryPoint: path.join(rootDir, "lib/audit/index.cts"),
     actionPath: path.join(rootDir, "lib/audit/action.yml"),
   },
 ] as const;
@@ -45,8 +45,8 @@ async function packageAction({
       absWorkingDir: rootDir,
       bundle: true,
       entryPoints: [config.entryPoint],
-      format: "esm",
-      outfile: path.join(libDir, "index.js"),
+      format: "cjs",
+      outfile: path.join(libDir, "index.cjs"),
       platform: "node",
       sourcemap: true,
       target: "node24",
