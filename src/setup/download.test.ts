@@ -3,10 +3,20 @@ import * as tc from "@actions/tool-cache";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { beforeEach } from "node:test";
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { downloadCage, parseChecksum } from "./download";
 import { kMockPathPrefix, makeTestCageInfo } from "./testdata/testing";
+
+vi.mock("@actions/core", () => ({
+  info: vi.fn(),
+  addPath: vi.fn(),
+}));
+
+vi.mock("@actions/tool-cache", () => ({
+  downloadTool: vi.fn(),
+  extractZip: vi.fn(),
+  cacheDir: vi.fn(),
+}));
 
 describe("downloadCage", () => {
   beforeEach(() => {
@@ -14,8 +24,8 @@ describe("downloadCage", () => {
   });
   test("basic", async () => {
     const cage = makeTestCageInfo({ version: "0.2.0" });
-    const mockInfo = vi.spyOn(core, "info").mockImplementation(() => {});
-    vi.spyOn(tc, "downloadTool").mockImplementation(async (u: string) => {
+    vi.mocked(core.info).mockImplementation(() => {});
+    vi.mocked(tc.downloadTool).mockImplementation(async (u: string) => {
       const { pathname } = new URL(u);
       const p = pathname.replace(kMockPathPrefix, "");
       const tmp = os.tmpdir();
@@ -23,12 +33,12 @@ describe("downloadCage", () => {
       await fs.copyFile(path.resolve(__dirname, "testdata", p), dest);
       return dest;
     });
-    vi.spyOn(tc, "extractZip").mockImplementation(async (file: string) => file);
-    vi.spyOn(tc, "cacheDir").mockImplementation(async (dir: string) => dir);
-    vi.spyOn(core, "addPath").mockImplementation(() => {});
+    vi.mocked(tc.extractZip).mockImplementation(async (file: string) => file);
+    vi.mocked(tc.cacheDir).mockImplementation(async (dir: string) => dir);
+    vi.mocked(core.addPath).mockImplementation(() => {});
     await downloadCage(cage);
-    expect(mockInfo).toHaveBeenNthCalledWith(1, "🥚 Installing cage...");
-    expect(mockInfo).toHaveBeenNthCalledWith(
+    expect(core.info).toHaveBeenNthCalledWith(1, "🥚 Installing cage...");
+    expect(core.info).toHaveBeenNthCalledWith(
       2,
       expect.stringContaining("🐣 cage has been installed at '"),
     );
@@ -45,7 +55,7 @@ describe("downloadCage", () => {
 
   test("should throw if checksums not matched", async () => {
     const cage = makeTestCageInfo({ version: "0.2.0" });
-    vi.spyOn(tc, "downloadTool").mockImplementation(async (u: string) => {
+    vi.mocked(tc.downloadTool).mockImplementation(async (u: string) => {
       const { pathname } = new URL(u);
       let p = pathname.replace("/loilo-inc/canarycage/releases/download/", "");
       if (p.endsWith("checksums.txt")) {
@@ -56,9 +66,9 @@ describe("downloadCage", () => {
       await fs.copyFile(path.resolve(__dirname, "testdata", p), dest);
       return dest;
     });
-    vi.spyOn(tc, "extractZip").mockImplementation(async (file: string) => file);
-    vi.spyOn(tc, "cacheDir").mockImplementation(async (dir: string) => dir);
-    vi.spyOn(core, "addPath").mockImplementation(() => {});
+    vi.mocked(tc.extractZip).mockImplementation(async (file: string) => file);
+    vi.mocked(tc.cacheDir).mockImplementation(async (dir: string) => dir);
+    vi.mocked(core.addPath).mockImplementation(() => {});
     await expect(downloadCage(cage)).rejects.toThrow("Checksum mismatch:");
   });
 });
